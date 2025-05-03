@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheque Deposit | RJM Bank</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #6a2c91;
+            --primary-light: #8a4baf;
+            --primary-dark: #4a1d64;
+            --secondary: #e9d8f4;
+            --accent: #58b368;
+            --text-dark: #2d283e;
+            --text-light: #f4f1f9;
+            --bg-light: #f9f6ff;
+            --bg-dark: #2d283e;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-dark);
+        }
+
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(106, 44, 145, 0.1);
+        }
+
+        .navbar-brand {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(106, 44, 145, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(106, 44, 145, 0.15);
+        }
+
+        .card-header {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #e0d3eb;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 0.25rem rgba(106, 44, 145, 0.25);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .account-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            border-left: 5px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .account-card:hover {
+            box-shadow: 0 10px 25px rgba(106, 44, 145, 0.15);
+        }
+
+        .account-card h6 {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .account-card p {
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .upload-area {
+            background-color: var(--secondary);
+            border: 2px dashed var(--primary);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background-color: #e0c9f0;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .preview-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(106, 44, 145, 0.08);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-dark);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 30px 0;
+            border-radius: 0 0 50px 50px;
+            margin-bottom: 30px;
+        }
+
+        .grape-icon {
+            color: var(--primary-light);
+            margin-right: 10px;
+        }
+
+        .loading-spinner {
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="bi bi-bank2 grape-icon"></i> RJM Bank
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-person-circle me-1"></i> Accounts
+                        </a>
+                    </li>
+                   
+                </ul>
+                <div class="ms-3 d-flex align-items-center">
+                    <div class="dropdown">
+                        <a class="btn btn-outline-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i> {{ request.user.get_full_name|default:request.user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h2><i class="bi bi-file-earmark-check me-2"></i>Cheque Deposit</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Cheque Deposit</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Upload Cheque Image</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="cheque-deposit-form" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <!-- Upload Section -->
+                            <div class="upload-area mb-4" id="front-upload-area">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5>Drag & Drop or Click to Upload</h5>
+                                <p class="text-muted">Upload a clear image of your cheque (front side)</p>
+                                <button type="button" class="btn btn-primary mt-2" id="front-upload-btn">
+                                    <i class="bi bi-upload me-2"></i>Select File
+                                </button>
+                                
+                                <div id="front-preview-container" class="preview-container" style="display: none;">
+                                    <h6 class="mb-3">Preview</h6>
+                                    <img id="front-preview" class="img-fluid rounded" style="max-height: 300px;">
+                                </div>
+                            </div>
+                            
+                            <!-- Cheque Details Section -->
+                            <h5 class="mb-3 mt-4"><i class="bi bi-card-checklist me-2"></i>Cheque Details</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label for="amount" class="form-label">Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" id="amount" name="amount" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="cheque_number" class="form-label">Cheque Number</label>
+                                    <input type="text" class="form-control" id="cheque_number" name="cheque_number" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="issuing_bank" class="form-label">Issuing Bank</label>
+                                    <input type="text" class="form-control" id="issuing_bank" name="bank_name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="date_of_issue" class="form-label">Date of Issue</label>
+                                    <input type="date" class="form-control" id="date_of_issue" name="date_of_issue" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Deposit Account Section -->
+                            <h5 class="mb-3 mt-4"><i class="bi bi-bank me-2"></i>Deposit Account</h5>
+                            <p class="text-muted mb-3">Select the account where you want to deposit this cheque</p>
+                            
+                            <div class="row g-3 mb-4" id="accounts-container">
+                                <!-- Account data will be loaded here -->
+                                <div class="col-12 text-center py-4" id="accounts-loading">
+                                    <div class="spinner-border loading-spinner" role="status">
+                                        <span class="visually-hidden">Loading accounts...</span>
+                                    </div>
+                                    <p class="mt-2">Loading your accounts...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Terms & Actions -->
+                            <div class="form-check form-switch mb-4">
+                                <input class="form-check-input" type="checkbox" id="termsSwitch" required>
+                                <label class="form-check-label" for="termsSwitch">
+                                    I confirm that the information provided is accurate
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary" id="submit-btn">
+                                    <i class="bi bi-check-circle me-2"></i>Submit Deposit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Information Card -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Important Information</h5>
+                        <ul class="mb-0">
+                            <li>Cheque deposits are processed automatically after 30 seconds.</li>
+                            <li>You will receive a notification when your deposit has been processed.</li>
+                            <li>Ensure the cheque is properly signed and dated.</li>
+                            <li>The image must be clear and all details should be visible.</li>
+                            <li>Keep the original cheque for at least 14 days after deposit.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white py-4 mt-auto border-top">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-md-0 text-center text-md-start">
+                        &copy; 2023 RJM Bank. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-inline mb-0 text-center text-md-end">
+                        <li class="list-inline-item"><a href="#" class="text-decoration-none text-muted">Privacy Policy</a></li>
+                        <li class="list-inline-item">•</li>
+                        <li class="list-inline-item"><a href="#" class="text-decoration-none text-muted">Terms of Service</a></li>
+                        <li class="list-inline-item">•</li>
+                        <li class="list-inline-item"><a href="#" class="text-decoration-none text-muted">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Hidden file input elements -->
+    <input type="file" id="front_side_input" name="cheque_image" style="display: none;" accept="image/*" required>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Add SweetAlert2 library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Front side upload button click handler
+            $('#front-upload-btn, #front-upload-area').click(function() {
+                $('#front_side_input').click();
+            });
+            
+            // Handle front side image preview
+            $('#front_side_input').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Display preview image
+                        $('#front-preview').attr('src', e.target.result);
+                        $('#front-preview-container').show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Function to fetch account data from the database
+            fetchAccountData();
+            
+            // Handle form submission
+            $('#cheque-deposit-form').submit(function(e) {
+                e.preventDefault();
+                
+                // Check if terms are accepted
+                if (!$('#termsSwitch').is(':checked')) {
+                    alert('Please confirm that the information provided is accurate');
+                    return false;
+                }
+                
+                // Check if an account is selected
+                const selectedAccount = $('select[name="account_selection"]').filter(function() {
+                    return $(this).val() !== '';
+                });
+                
+                if (selectedAccount.length === 0) {
+                    alert('Please select an account for deposit');
+                    return false;
+                }
+                
+                // Check if cheque image is uploaded
+                if ($('#front_side_input')[0].files.length === 0) {
+                    alert('Please upload a cheque image');
+                    return false;
+                }
+                
+                // Get form data
+                const formData = new FormData(this);
+                
+                // Add account selection data
+                formData.append('account_id', selectedAccount.data('account-id'));
+                formData.append('account_type', selectedAccount.data('account-type'));
+                
+                // Show loading state
+                const submitBtn = $('#submit-btn');
+                const originalText = submitBtn.html();
+                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+                
+                // Submit the form data
+                $.ajax({
+                    url: window.location.href,
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    success: function(response) {
+                        // Log the response for debugging
+                        console.log('Cheque deposit response:', response);
+                        
+                        // Store deposit data in session storage
+                        const depositData = {
+                            id: response.deposit_id || 'NEW',
+                            amount: $('#amount').val(),
+                            chequeNumber: $('#cheque_number').val(),
+                            issuingBank: $('#issuing_bank').val(),
+                            dateOfIssue: $('#date_of_issue').val(),
+                            accountId: selectedAccount.data('account-id'),
+                            accountType: selectedAccount.data('account-type'),
+                            timestamp: new Date().toISOString(),
+                            image: $('#front_side_input')[0].files[0] ? 'Image uploaded' : 'No image'
+                        };
+                        
+                        sessionStorage.setItem('chequeDepositData', JSON.stringify(depositData));
+                        
+                        // Immediately redirect to dashboard
+                        window.location.href = '/dashboard/';
+                    },
+                    error: function(xhr) {
+                        // Show error message
+                        alert('Error submitting cheque deposit: ' + (xhr.responseJSON?.message || 'Please try again.'));
+                        console.error(xhr.responseText);
+                        
+                        // Reset button state
+                        submitBtn.prop('disabled', false).html(originalText);
+                    }
+                });
+                
+                return false;
+            });
+        });
+        
+        // Function to fetch account data from the database
+        function fetchAccountData() {
+            // Show loading indicator
+            $('#accounts-loading').show();
+            
+            // Make an AJAX call to fetch the current user's account data
+            $.ajax({
+                url: '/api/accounts/',  // This matches the URL you've defined in urls.py
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function(data) {
+                    console.log('Account data received:', data);
+                    renderAccounts(data);
+                },
+                error: function(xhr) {
+                    console.error('Error fetching account data:', xhr.responseText);
+                    
+                    // If API fails, show an error message
+                    $('#accounts-container').html('<div class="alert alert-danger">Failed to load account data. Please refresh the page.</div>');
+                    $('#accounts-loading').hide();
+                }
+            });
+        }
+        
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Function to render account data
+        function renderAccounts(data) {
+            // Hide loading indicator
+            $('#accounts-loading').hide();
+            
+            // Clear existing content
+            $('#accounts-container').empty();
+            
+            // Render savings accounts section
+            if (data.savingsAccounts && data.savingsAccounts.length > 0) {
+                data.savingsAccounts.forEach(account => {
+                    const savingsHtml = `
+                    <div class="col-md-6 mb-4">
+                        <div class="account-card" id="account-card-savings-${account.id}">
+                            <div class="mb-3">
+                                <i class="bi bi-piggy-bank account-icon"></i>
+                                <h5 class="account-title">Savings Account</h5>
+                                <p class="account-number">Account: ${account.accountNumber}</p>
+                                <p class="account-balance">Balance: $${account.balance.toFixed(2)}</p>
+                                <select class="form-select account-select" name="account_selection" data-account-id="${account.id}" data-account-type="savings" data-card-id="account-card-savings-${account.id}">
+                                    <option value="">Select</option>
+                                    <option value="primary">${account.type}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>`;
+                    
+                    $('#accounts-container').append(savingsHtml);
+                });
+            }
+            
+            // Render loan accounts section
+            if (data.loanAccounts && data.loanAccounts.length > 0) {
+                let activeLoanCount = 0;
+                
+                data.loanAccounts.forEach(loan => {
+                    // Skip loans that are fully paid (outstanding <= 0 or status is 'paid')
+                    if (loan.outstanding <= 0 || loan.status === 'paid') {
+                        return;
+                    }
+                    
+                    activeLoanCount++;
+                    
+                    const loanHtml = `
+                    <div class="col-md-6 mb-4">
+                        <div class="account-card" id="account-card-loan-${loan.id}">
+                            <div class="mb-3">
+                                <i class="bi bi-cash-coin account-icon"></i>
+                                <h5 class="account-title">${loan.type}</h5>
+                                <p class="account-number">Loan ID: ${loan.loanId}</p>
+                                <p class="account-balance">Outstanding: $${loan.outstanding.toFixed(2)}</p>
+                                <select class="form-select account-select" name="account_selection" data-account-id="${loan.id}" data-account-type="loan" data-card-id="account-card-loan-${loan.id}">
+                                    <option value="">Select</option>
+                                    <option value="loan">Pay Loan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>`;
+                    
+                    $('#accounts-container').append(loanHtml);
+                });
+                
+                // If all loans are paid, show a message
+                if (data.loanAccounts.length > 0 && activeLoanCount === 0) {
+                    $('#accounts-container').append(`
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                All your loans are fully paid. No outstanding payments required.
+                            </div>
+                        </div>
+                    `);
+                }
+            }
+            
+            // If no accounts found
+            if ((!data.savingsAccounts || data.savingsAccounts.length === 0) && 
+                (!data.loanAccounts || data.loanAccounts.length === 0)) {
+                $('#accounts-container').html('<div class="alert alert-info">No accounts found.</div>');
+            }
+            
+            // Add event listener for select elements
+            $('.account-select').on('change', function() {
+                // Remove highlight from all cards
+                $('.account-card').removeClass('selected-account');
+                $('.account-card').css('border-left', '5px solid var(--primary)');
+                
+                // If this select has a value, highlight its card
+                if ($(this).val() !== '') {
+                    const cardId = $(this).data('card-id');
+                    $(`#${cardId}`).addClass('selected-account');
+                    $(`#${cardId}`).css('border-left', '5px solid var(--accent)');
+                    
+                    // Deselect all other options
+                    $('.account-select').not(this).val('');
+                }
+            });
+        }
+        // Add this at the end of your script section
+        // Force page reload when coming back from history
+        $(window).on('pageshow', function(event) {
+            if (event.originalEvent.persisted) {
+                window.location.reload();
+            }
+        });
+   
+$(document).ready(function() {
+        $('#chequeForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Create FormData object
+            var formData = new FormData(this);
+            
+            // Show loading indicator
+            $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+            
+            // Submit the form via AJAX
+            $.ajax({
+                url: '/upload_cheque/',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Your cheque has been submitted for processing.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            // Redirect to status tracking page
+                            window.location.href = '/status_tracking/';
+                        });
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message || 'An error occurred while processing your request.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while processing your request.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                },
+                complete: function() {
+                    // Reset button state
+                    $('#submitBtn').prop('disabled', false).html('Submit');
+                }
+            });
+        });
+    });
+$(document).ready(function() {
+        // Your existing code...
+        
+        // Update the success message handler
+        function handleSuccess(response) {
+            if (response.success) {
+                // Show success message with auto-approval information
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Cheque deposit submitted successfully! Your deposit will be automatically processed and credited to your account within 10 minutes.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Redirect to dashboard or reload page
+                    window.location.href = '/dashboard/';
+                });
+            } else {
+                // Show error message
+                Swal.fire({
+                    title: 'Error!',
+                    text: response.message || 'An error occurred while processing your request.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+        
+        // Your existing code...
+    });
+    
+        </script>
+    </body>
+
+</html>

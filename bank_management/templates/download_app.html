@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Download Our App - RJM Bank{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{% url 'homepage' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+    
+    <h1 class="mb-4">Download the RJM Bank Mobile App</h1>
+    
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-4">Banking on the Go</h3>
+                    <div class="mb-4">
+                        <!-- Updated app screenshot that matches RJM Bank's design -->
+                        <div class="phone-mockup" style="max-width: 300px; margin: 0 auto; border: 12px solid #333; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                            <div style="background-color: #6c5ce7; color: white; padding: 15px; text-align: left;">
+                                <h5 style="margin: 0; font-size: 18px;">RJM Bank</h5>
+                            </div>
+                            <div style="background-color: #f8f9fa; padding: 15px; height: 450px; overflow: hidden;">
+                                <!-- App content mockup -->
+                                <div style="background-color: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                    <h6 style="color: #6c5ce7; margin-bottom: 10px;">Welcome, User</h6>
+                                    <div style="background-color: #6c5ce7; color: white; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 15px;">
+                                        <small>Available Balance</small>
+                                        <h4 style="margin: 5px 0;">$12,345.67</h4>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                                        <div style="text-align: center; width: 30%;">
+                                            <div style="background-color: #f0f0f0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                                <span>↑</span>
+                                            </div>
+                                            <small>Send</small>
+                                        </div>
+                                        <div style="text-align: center; width: 30%;">
+                                            <div style="background-color: #f0f0f0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                                <span>↓</span>
+                                            </div>
+                                            <small>Receive</small>
+                                        </div>
+                                        <div style="text-align: center; width: 30%;">
+                                            <div style="background-color: #f0f0f0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                                <span>$</span>
+                                            </div>
+                                            <small>Invest</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="background-color: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                    <h6 style="margin-bottom: 10px;">Recent Transactions</h6>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                                        <div>
+                                            <small style="color: #666;">Grocery Store</small><br>
+                                            <small>May 15</small>
+                                        </div>
+                                        <div style="color: #e74c3c;">-$45.67</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                                        <div>
+                                            <small style="color: #666;">Salary Deposit</small><br>
+                                            <small>May 12</small>
+                                        </div>
+                                        <div style="color: #2ecc71;">+$2,500.00</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <div>
+                                            <small style="color: #666;">Electric Bill</small><br>
+                                            <small>May 10</small>
+                                        </div>
+                                        <div style="color: #e74c3c;">-$89.99</div>
+                                    </div>
+                                </div>
+                                <div style="background-color: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                    <h6 style="margin-bottom: 10px;">Quick Actions</h6>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div style="background-color: #f0f0f0; border-radius: 8px; padding: 10px; text-align: center;">
+                                            <small>Transfer</small>
+                                        </div>
+                                        <div style="background-color: #f0f0f0; border-radius: 8px; padding: 10px; text-align: center;">
+                                            <small>Pay Bills</small>
+                                        </div>
+                                        <div style="background-color: #f0f0f0; border-radius: 8px; padding: 10px; text-align: center;">
+                                            <small>Loans</small>
+                                        </div>
+                                        <div style="background-color: #f0f0f0; border-radius: 8px; padding: 10px; text-align: center;">
+                                            <small>Investments</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="card-text">Access your accounts, transfer funds, and pay bills on-the-go with our award-winning mobile app. Available for iOS and Android devices.</p>
+                    
+                    <div class="d-flex justify-content-center mt-4">
+                        <a href="#" onclick="downloadApp('ios')" class="btn btn-dark mx-2">
+                            <i class="bi bi-apple me-2"></i> App Store
+                        </a>
+                        <a href="#" onclick="downloadApp('android')" class="btn btn-dark mx-2">
+                            <i class="bi bi-google-play me-2"></i> Google Play
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">App Features</h3>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="icon-box bg-light-purple me-3" style="width: 50px; height: 50px; background-color: #a29bfe; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <div>
+                            <h5>Quick Access</h5>
+                            <p>Log in quickly and securely with Face ID, Touch ID, or PIN.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="icon-box bg-light-purple me-3" style="width: 50px; height: 50px; background-color: #a29bfe; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </div>
+                        <div>
+                            <h5>Easy Transfers</h5>
+                            <p>Transfer money between accounts or to other people with just a few taps.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="icon-box bg-light-purple me-3" style="width: 50px; height: 50px; background-color: #a29bfe; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <div>
+                            <h5>Real-time Notifications</h5>
+                            <p>Get instant alerts for transactions, deposits, and account updates.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="icon-box bg-light-purple me-3" style="width: 50px; height: 50px; background-color: #a29bfe; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div>
+                            <h5>Financial Insights</h5>
+                            <p>Track your spending habits and get personalized financial insights.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex">
+                        <div class="icon-box bg-light-purple me-3" style="width: 50px; height: 50px; background-color: #a29bfe; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <h5>Enhanced Security</h5>
+                            <p>Protect your account with multi-factor authentication and biometric login.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Scan to Download</h3>
+                    <p class="card-text">Scan the QR code below with your mobile device to download our app.</p>
+                    <div class="d-flex justify-content-center">
+                        <div class="qr-container" style="width: 200px; height: 200px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                            <!-- Using a placeholder QR code image -->
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://rjmbank.com/app" alt="QR Code" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function downloadApp(platform) {
+        if (platform === 'ios') {
+            // Show iOS download modal
+            alert('Redirecting to App Store...');
+            // In a real app, you would redirect to the App Store
+            // window.location.href = 'https://apps.apple.com/app/your-app-id';
+        } else if (platform === 'android') {
+            // Show Android download modal
+            alert('Redirecting to Google Play Store...');
+            // In a real app, you would redirect to the Play Store
+            // window.location.href = 'https://play.google.com/store/apps/details?id=your.app.package';
+        }
+    }
+    
+    // Check if the user is on a mobile device
+    document.addEventListener('DOMContentLoaded', function() {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            const platform = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'android';
+            const banner = document.createElement('div');
+            banner.className = 'alert alert-info alert-dismissible fade show';
+            banner.innerHTML = `
+                <strong>Download our app!</strong> Get the best experience on your mobile device.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="mt-2">
+                    <button onclick="downloadApp('${platform}')" class="btn btn-sm btn-dark">
+                        Download Now
+                    </button>
+                </div>
+            `;
+            document.querySelector('.container').prepend(banner);
+        }
+    });
+</script>
+{% endblock %}

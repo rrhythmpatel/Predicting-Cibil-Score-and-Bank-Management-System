@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Get Started - RJM Bank{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{% url 'homepage' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+    
+    <h1 class="mb-4">Get Started with RJM Bank</h1>
+    
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Step 1: Create Your Account</h3>
+                    <p class="card-text">Sign up for a new account to access all our banking services. The process is quick and secure.</p>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Sign Up Now</a>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Step 2: Verify Your Identity</h3>
+                    <p class="card-text">Complete our secure verification process to ensure your account is protected.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Step 3: Fund Your Account</h3>
+                    <p class="card-text">Add funds to your account through various methods including bank transfer, debit card, or check deposit.</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Step 4: Start Banking</h3>
+                    <p class="card-text">Access all our banking services including transfers, investments, loans, and more.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Need Help?</h4>
+                    <p class="card-text">Our customer support team is available to assist you with any questions or issues.</p>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-purple">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

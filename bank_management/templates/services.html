@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Services - RJM Bank{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Back button added here -->
+    <div class="mb-4">
+        <a href="{% url 'homepage' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+    
+    <h1 class="mb-4">Our Services</h1>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-light-purple me-3">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Personal Banking</h5>
+                    </div>
+                    <p class="card-text">Manage your everyday finances with our comprehensive personal banking solutions. Enjoy competitive interest rates, low fees, and 24/7 access to your accounts.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-light-purple me-3">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Business Banking</h5>
+                    </div>
+                    <p class="card-text">Tailored financial solutions for businesses of all sizes. From startups to established enterprises, we provide the tools and support you need to grow.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-light-purple me-3">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Loans & Mortgages</h5>
+                    </div>
+                    <p class="card-text">Competitive rates on personal loans, home loans, and mortgages. Our financial advisors can help you find the right solution for your needs.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-light-purple me-3">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Investment Services</h5>
+                    </div>
+                    <p class="card-text">Grow your wealth with our range of investment options. From stocks and bonds to mutual funds and retirement planning, we've got you covered.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

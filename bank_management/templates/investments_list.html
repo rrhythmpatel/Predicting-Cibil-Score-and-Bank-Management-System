@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Investments{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">Your Investment Portfolio</h2>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Portfolio Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">Total Invested</div>
+                                <div class="card-body">
+                                    <h5 class="card-title">${{ total_invested|floatformat:2 }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">Current Value</div>
+                                <div class="card-body">
+                                    <h5 class="card-title">${{ total_current_value|floatformat:2 }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header">Profit/Loss</div>
+                                <div class="card-body">
+                                    <h5 class="card-title {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% endif %}">
+                                        ${{ total_profit_loss|floatformat:2 }}
+                                        ({{ total_profit_loss|div:total_invested|mul:100|floatformat:2 }}%)
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Your Investments</h4>
+                </div>
+                <div class="card-body">
+                    {% if investments %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Name</th>
+                                        <th>Shares</th>
+                                        <th>Purchase Price</th>
+                                        <th>Current Price</th>
+                                        <th>Total Cost</th>
+                                        <th>Current Value</th>
+                                        <th>Profit/Loss</th>
+                                        <th>Purchase Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for investment in investments %}
+                                    <tr>
+                                        <td>{{ investment.symbol }}</td>
+                                        <td>{{ investment.stock_name }}</td>
+                                        <td>{{ investment.shares }}</td>
+                                        <td>${{ investment.purchase_price|floatformat:2 }}</td>
+                                        <td>${{ investment.current_price|floatformat:2 }}</td>
+                                        <td>${{ investment.total_cost|floatformat:2 }}</td>
+                                        <td>${{ investment.current_value|floatformat:2 }}</td>
+                                        <td class="{% if investment.profit_loss > 0 %}text-success{% elif investment.profit_loss < 0 %}text-danger{% endif %}">
+                                            ${{ investment.profit_loss|floatformat:2 }}
+                                            ({{ investment.profit_loss_percent|floatformat:2 }}%)
+                                        </td>
+                                        <td>{{ investment.purchase_date|date:"M d, Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p>You don't have any investments yet.</p>
+                            <a href="{% url 'create_investment_page' %}" class="btn btn-primary">Start Investing</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'create_investment_page' %}" class="btn btn-success">Make New Investment</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary ml-2">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

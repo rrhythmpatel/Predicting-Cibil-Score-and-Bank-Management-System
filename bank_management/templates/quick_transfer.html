@@ -1,0 +1,510 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Success Modal -->
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="mb-3">Transfer Successful!</h4>
+                    <p class="mb-4">Your money has been sent successfully.</p>
+                    <button type="button" class="btn btn-primary px-4" onclick="window.location.href='{% url 'dashboard' %}'">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Balance Overview Card -->
+            <div class="card balance-card mb-4">
+                <div class="balance-header">
+                    <div class="balance-info">
+                        <h5>Available Balance</h5>
+                        <h2 class="text-gradient">${{ request.user.account_balance }}</h2>
+                        <p class="text-muted">Account: {{ request.user.account_number }}</p>
+                    </div>
+                    <div class="balance-chart">
+                        <div class="limit-indicator">
+                            <svg viewBox="0 0 36 36" class="circular-chart" id="limitChart">
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#6366f1" />
+                                        <stop offset="100%" style="stop-color:#8b5cf6" />
+                                    </linearGradient>
+                                </defs>
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path id="limitProgress" class="circle" stroke="url(#gradient)" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <div class="limit-text">
+                                <span>Daily Limit</span>
+                                <strong id="limitRemaining">${{ daily_limit_remaining }}</strong>
+                                <small class="text-muted d-block" id="totalLimit">of $5000.00</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Transfer Form -->
+            <div class="card transfer-card">
+                <div class="card-body p-4">
+                    <h4 class="mb-4">Quick Transfer</h4>
+                    
+                    <!-- Recent Recipients -->
+                    <div class="recent-recipients mb-4">
+                        <h6>Recent Recipients</h6>
+                        <div class="recipients-scroll">
+                            {% for recipient in recent_transfers|slice:":5" %}
+                            <div class="recipient-chip" data-account="{{ recipient.recipient.account_number }}">
+                                <div class="recipient-avatar">{{ recipient.recipient.username|first }}</div>
+                                <span>{{ recipient.recipient.username }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <form id="quickTransferForm" method="POST" action="{% url 'process_quick_transfer' %}" class="transfer-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label class="form-label">Recipient Account</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" name="recipient_account" id="recipientAccount" required>
+                            </div>
+                            <div id="recipientName" class="form-text"></div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Amount</label>
+                            <div class="amount-input">
+                                <div class="quick-amounts">
+                                    <button type="button" class="amount-preset" data-amount="100">$100</button>
+                                    <button type="button" class="amount-preset" data-amount="500">$500</button>
+                                    <button type="button" class="amount-preset" data-amount="1000">$1000</button>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" name="amount" id="transferAmount" min="1" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">Description</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-chat"></i></span>
+                                <input type="text" class="form-control" name="description" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg transfer-btn">
+                                <i class="bi bi-send me-2"></i>Send Money
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-light">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Remove the Recent Transfers card and keep the closing divs -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modern Styling */
+.balance-card {
+    background: linear-gradient(145deg, #ffffff, #f8f9ff);
+    border: none;
+    border-radius: 20px;
+}
+
+.balance-header {
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.text-gradient {
+    background: linear-gradient(45deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 1rem 0;
+}
+
+.circular-chart {
+    width: 100px;
+    height: 100px;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 3;
+}
+
+.circle {
+    fill: none;
+    stroke: url(#gradient);
+    stroke-width: 3;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+}
+
+.transfer-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.recipients-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 0;
+    scrollbar-width: none;
+}
+
+.recipient-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.recipient-chip:hover {
+    background: #e9ecef;
+}
+
+.recipient-avatar {
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(45deg, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+.amount-input {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.quick-amounts {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.amount-preset {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    background: white;
+    color: #6366f1;
+    transition: all 0.3s;
+}
+
+.amount-preset:hover {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+.transfer-btn {
+    background: linear-gradient(45deg, #6366f1, #8b5cf6);
+    border: none;
+    padding: 12px;
+}
+
+.transfers-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.transfer-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.transfer-details {
+    flex: 1;
+    margin-left: 15px;
+}
+
+.transfer-amount {
+    font-weight: 600;
+    color: #6366f1;
+}
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}
+</style>
+
+<!-- Keep only one script block at the end of your content -->
+<script>
+// Add this to your script block
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the current user's account number to use as a unique identifier
+    const userAccountNumber = '{{ request.user.account_number }}';
+    const dailyUsedKey = `dailyUsed_${userAccountNumber}`;
+    
+    // Function to update daily limit display
+    function updateDailyLimit(usedAmount, totalLimit) {
+        const limitProgress = document.getElementById('limitProgress');
+        const limitRemaining = document.getElementById('limitRemaining');
+        const percentage = Math.min((usedAmount / totalLimit) * 100, 100);
+        const remaining = Math.max(totalLimit - usedAmount, 0);
+
+        limitProgress.style.transition = 'stroke-dasharray 0.5s ease-in-out';
+        limitProgress.setAttribute('stroke-dasharray', `${percentage}, 100`);
+        limitRemaining.textContent = `$${remaining.toFixed(2)}`;
+    }
+
+    // Recipient chip selection
+    const recipientChips = document.querySelectorAll('.recipient-chip');
+    recipientChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            const account = this.dataset.account;
+            document.getElementById('recipientAccount').value = account;
+        });
+    });
+
+    // Amount preset selection
+    const amountPresets = document.querySelectorAll('.amount-preset');
+    amountPresets.forEach(preset => {
+        preset.addEventListener('click', function() {
+            const amount = this.dataset.amount;
+            document.getElementById('transferAmount').value = amount;
+        });
+    });
+
+    // Add account number lookup functionality
+    const recipientAccountInput = document.getElementById('recipientAccount');
+    const recipientNameDiv = document.getElementById('recipientName');
+
+    recipientAccountInput.addEventListener('input', async function() {
+        const accountNumber = this.value.trim();
+        if (accountNumber.length >= 10) {  // Assuming account numbers are 10 digits
+            try {
+                const response = await fetch(`/get-recipient-name/?account=${accountNumber}`);
+                const data = await response.json();
+                
+                if (data.username) {
+                    recipientNameDiv.textContent = `Recipient: ${data.username}`;
+                    recipientNameDiv.classList.remove('text-danger');
+                    recipientNameDiv.classList.add('text-success');
+                } else {
+                    recipientNameDiv.textContent = 'Account not found';
+                    recipientNameDiv.classList.remove('text-success');
+                    recipientNameDiv.classList.add('text-danger');
+                }
+            } catch (error) {
+                recipientNameDiv.textContent = 'Error looking up account';
+                recipientNameDiv.classList.remove('text-success');
+                recipientNameDiv.classList.add('text-danger');
+            }
+        } else {
+            recipientNameDiv.textContent = '';
+        }
+    });
+
+    // Form validation and submission
+    const transferForm = document.getElementById('quickTransferForm');
+    transferForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (this.submitting) return;
+        
+        const amount = parseFloat(this.amount.value);
+        const balance = parseFloat('{{ request.user.account_balance }}');
+        const dailyLimit = 5000;
+        // Use the user-specific key
+        let currentUsed = parseFloat(localStorage.getItem(dailyUsedKey) || '0');
+        const dailyRemaining = dailyLimit - currentUsed;
+        
+        if (amount > balance) {
+            alert('Insufficient balance!');
+            return;
+        }
+        
+        if (amount > dailyRemaining) {
+            alert(`Transfer amount exceeds daily limit. You can transfer up to $${dailyRemaining.toFixed(2)} today.`);
+            return;
+        }
+        
+        if (amount <= 0) {
+            alert('Please enter a valid amount!');
+            return;
+        }
+        
+        this.submitting = true;
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        
+        try {
+            const formData = new FormData(this);
+            const response = await fetch('/quick-transfer/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update balance display
+                const balanceDisplay = document.querySelector('.text-gradient');
+                if (balanceDisplay) {
+                    balanceDisplay.textContent = `$${data.new_balance.toFixed(2)}`;
+                }
+
+                // Show success modal
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+
+                // Update daily limit with user-specific key
+                currentUsed += amount;
+                localStorage.setItem(dailyUsedKey, currentUsed.toString());
+                updateDailyLimit(currentUsed, dailyLimit);
+
+                // Clear form
+                this.reset();
+                
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            } else {
+                throw new Error(data.error || 'Transfer failed');
+            }
+        } catch (error) {
+            console.error('Transfer error:', error);
+            alert(error.message || 'Transfer failed. Please try again.');
+        } finally {
+            this.submitting = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    });
+
+    // Initialize daily limit with user-specific key
+    const currentUsed = parseFloat(localStorage.getItem(dailyUsedKey) || '0');
+    updateDailyLimit(currentUsed, 5000);
+
+    // Reset daily limit at midnight
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const timeUntilMidnight = tomorrow - now;
+
+    setTimeout(() => {
+        localStorage.setItem(dailyUsedKey, '0');
+        updateDailyLimit(0, 5000);
+    }, timeUntilMidnight);
+});
+</script>
+
+<!-- Update the form submission success handler in your script -->
+<script>
+    <!-- Replace the daily limit display section with this code -->
+    <div class="limit-text">
+        <span>Daily Limit</span>
+        <strong id="limitRemaining">$5000.00</strong>
+        <small class="text-muted d-block" id="totalLimit">of $5000.00</small>
+    </div>
+    
+    <!-- Add this script at the end of the file -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hard-coded daily limit value
+        const dailyLimit = 5000.00;
+        
+        // Get the used amount from the server, but ensure it's not negative
+        let usedAmount = {{ daily_used_amount|default:0 }};
+        usedAmount = Math.max(0, usedAmount); // Ensure non-negative
+        
+        // Calculate remaining (never negative)
+        const remaining = Math.max(dailyLimit - usedAmount, 0);
+        
+        // Calculate percentage (capped at 100%)
+        const percentage = Math.min((usedAmount / dailyLimit) * 100, 100);
+        
+        // Update the display
+        const limitProgress = document.getElementById('limitProgress');
+        const limitRemaining = document.getElementById('limitRemaining');
+        
+        limitRemaining.textContent = `$${remaining.toFixed(2)}`;
+        limitProgress.setAttribute('stroke-dasharray', `${percentage}, 100`);
+        
+        // Override any negative values that might be displayed
+        if (limitRemaining.textContent.includes('-')) {
+            limitRemaining.textContent = '$0.00';
+        }
+    });
+    </script>
+</script>
+<script>
+function validateRecipient(accountNumber) {
+    $.ajax({
+        url: '/get-recipient-name/',
+        data: { 'account': accountNumber },
+        method: 'GET',
+        success: function(response) {
+            if (response.success) {
+                // Show recipient details
+                $('#recipientName').text(response.name);
+                $('#recipientDetails').show();
+                $('.error-message').hide();
+            } else {
+                // Show error message
+                $('.error-message').text(response.message).show();
+                $('#recipientDetails').hide();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            $('.error-message').text('Error validating account').show();
+            $('#recipientDetails').hide();
+        }
+    });
+}
+</script>
+{% endblock %}
+
+<!-- Add this CSS -->
+<style>
+    .modal-content {
+        border: none;
+        border-radius: 15px;
+    }
+    
+    .bi-check-circle-fill {
+        color: #28a745;
+    }
+</style>

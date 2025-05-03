@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Management System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Find and replace the header/navbar styles -->
+    <style>
+        :root {
+            --primary-color: #6A0DAD; /* Grape color */
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 1rem;
+        }
+    
+        .navbar-brand {
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            cursor: pointer; /* Add cursor pointer to indicate it's clickable */
+        }
+    </style>
+    
+    <!-- Update the navbar brand text with conditional link -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            {% if request.path|slice:":10" == "/about_us/" or request.path|slice:":13" == "/get_started/" or request.path|slice:":12" == "/learn_more/" or request.path|slice:":13" == "/download_app/" or request.path|slice:":19" == "/security_features/" or request.path|slice:":10" == "/settings/" or request.path|slice:":10" == "/services/" or request.path|slice:":9" == "/contact/" %}
+                <a class="navbar-brand" href="{% url 'homepage' %}">RJM BANK</a>
+            {% else %}
+                <a class="navbar-brand" href="{% url 'dashboard' %}">RJM BANK</a>
+            {% endif %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Navigation items removed -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Add this right after the opening of the main content area, before your specific page content -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="/static/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the current page URL path
+            const currentPath = window.location.pathname;
+            console.log("Current path:", currentPath);
+            
+            // Get the navbar brand element
+            const navbarBrand = document.querySelector('.navbar-brand');
+            
+            // List of pages that should redirect to homepage
+            const homepageRedirectPages = [
+                'security-features',
+                'settings',
+                'download-app',
+                'about-us',
+                'contact',
+                'get-started',
+                'learn-more',
+                'services'
+            ];
+            
+            // Check if current page is in the list - simplified check
+            const shouldRedirectToHomepage = homepageRedirectPages.some(page => 
+                currentPath.includes(page)
+            );
+            
+            console.log("Should redirect to homepage:", shouldRedirectToHomepage);
+            
+            // Set the appropriate URL
+            if (shouldRedirectToHomepage) {
+                navbarBrand.href = "{% url 'homepage' %}";
+                console.log("Set to homepage");
+            } else {
+                navbarBrand.href = "{% url 'dashboard' %}";
+                console.log("Set to dashboard");
+            }
+        });
+    </script>
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

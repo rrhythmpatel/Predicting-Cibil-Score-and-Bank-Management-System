@@ -1,0 +1,1497 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create New Investment - RJM Bank{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/investment.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+<style>
+    .market-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .market-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    .chart-container {
+        height: 250px;
+        width: 100%;
+        position: relative;
+    }
+    .stock-ticker {
+        background-color: #f0f5ff;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .ticker-wrapper {
+        white-space: nowrap;
+        animation: ticker-scroll 30s linear infinite;
+    }
+    .ticker-item {
+        display: inline-block;
+        margin-right: 30px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        background-color: rgba(255,255,255,0.7);
+    }
+    @keyframes ticker-scroll {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+    }
+    .investment-form-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .card-header {
+        padding: 15px 20px;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 10px 15px;
+    }
+    .btn {
+        border-radius: 8px;
+        padding: 8px 20px;
+    }
+    .data-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .market-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .market-stat:last-child {
+        border-bottom: none;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255,255,255,0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+    }
+    .pulse {
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.7; }
+        50% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.7; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'sidebar.html' %}
+        
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Create New Investment</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'investment_page' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Investments
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Market Status Banner -->
+            <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    <span id="market-status-banner">Checking market status...</span>
+                    <span class="ms-2 small" id="market-time"></span>
+                </div>
+            </div>
+            
+            <!-- Stock Ticker -->
+            <div class="stock-ticker mb-4">
+                <div class="ticker-wrapper" id="ticker-wrapper">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card shadow-sm mb-4 investment-form-card">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0"><i class="bi bi-plus-circle text-success me-2"></i>Investment Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{% url 'create_investment' %}" method="post" id="investment-form">
+                                {% csrf_token %}
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="investment_type" class="form-label">Investment Type</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                            <select class="form-select" id="investment_type" name="investment_type" required onchange="showSuggestions(); updateMarketData();">
+                                                <option value="" selected disabled>Select investment type</option>
+                                                <option value="stock">Stock</option>
+                                                <option value="mutual_fund">Mutual Fund</option>
+                                                <option value="fixed_deposit">Fixed Deposit</option>
+                                                <option value="bond">Bond</option>
+                                                <option value="etf">ETF</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="name" class="form-label">Investment Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                            <input type="text" class="form-control" id="name" name="name" required list="investment-suggestions" onchange="updateSymbolData()">
+                                        </div>
+                                        <datalist id="investment-suggestions">
+                                            <!-- Options will be populated by JavaScript -->
+                                        </datalist>
+                                        <small class="form-text text-muted">Enter the name or select from suggestions</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="amount" class="form-label">Amount</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0.01" required>
+                                        </div>
+                                        <small class="form-text text-muted">Available balance: <span class="text-primary">${{ user.account_balance|floatformat:2 }}</span></small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="interest_rate" class="form-label">Interest Rate % (Optional)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-percent"></i></span>
+                                            <input type="number" class="form-control" id="interest_rate" name="interest_rate" step="0.01" min="0">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="maturity_date" class="form-label">Maturity Date (Optional)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                            <input type="date" class="form-control" id="maturity_date" name="maturity_date">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="status" class="form-label">Status</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-check-circle"></i></span>
+                                            <select class="form-select" id="status" name="status">
+                                                <option value="active" selected>Active</option>
+                                                <option value="pending">Pending</option>
+                                                <option value="completed">Completed</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{% url 'investment_page' %}" class="btn btn-outline-secondary me-md-2">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>Create Investment
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Selected Investment Chart -->
+                    <div class="card shadow-sm mb-4 market-card" id="selected-investment-card" style="display: none;">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0" id="selected-investment-title">Investment Performance</h5>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-light" onclick="changeChartPeriod('1M')">1M</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="changeChartPeriod('3M')">3M</button>
+                                <button class="btn btn-sm btn-outline-light active" onclick="changeChartPeriod('1Y')">1Y</button>
+                                <button class="btn btn-sm btn-outline-light" onclick="changeChartPeriod('5Y')">5Y</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="selected-investment-chart"></canvas>
+                                <div class="loading-overlay" id="chart-loading">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3" id="investment-details">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Investment Comparison -->
+                    <div class="card shadow-sm mb-4 market-card" id="investment-comparison-card" style="display: none;">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">Performance Comparison</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="comparison-chart"></canvas>
+                            </div>
+                            <div class="d-flex justify-content-center mt-3">
+                                <div class="btn-group" id="comparison-options">
+                                    <button class="btn btn-sm btn-outline-secondary active" data-index="SPY">S&P 500</button>
+                                    <button class="btn btn-sm btn-outline-secondary" data-index="QQQ">NASDAQ</button>
+                                    <button class="btn btn-sm btn-outline-secondary" data-index="IWM">Russell 2000</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card shadow-sm mb-4 market-card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0"><i class="bi bi-lightbulb me-2"></i>Investment Tips</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted" id="investment-type-title">General Tips</h6>
+                            <div id="investment-tips" class="mt-3">
+                                <p>Select an investment type to see specific tips.</p>
+                                <ul>
+                                    <li>Diversify your investments to reduce risk</li>
+                                    <li>Consider your investment timeline</li>
+                                    <li>Research before investing</li>
+                                    <li>Start with small amounts if you're new to investing</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Market Overview Card -->
+                    <div class="card shadow-sm mb-4 market-card">
+                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="bi bi-graph-up me-2"></i>Market Overview</h5>
+                            <span class="badge bg-light text-dark" id="market-update-time">Updating...</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container mb-3">
+                                <canvas id="market-overview-chart"></canvas>
+                                <div class="loading-overlay" id="market-chart-loading">
+                                    <div class="spinner-border text-info" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="market-overview">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Market Status</h6>
+                                    <span class="badge bg-success pulse" id="market-status">Loading...</span>
+                                </div>
+                                
+                                <div class="market-stat">
+                                    <div>
+                                        <strong>S&P 500</strong>
+                                    </div>
+                                    <div id="sp500-value">Loading...</div>
+                                </div>
+                                
+                                <div class="market-stat">
+                                    <div>
+                                        <strong>NASDAQ</strong>
+                                    </div>
+                                    <div id="nasdaq-value">Loading...</div>
+                                </div>
+                                
+                                <div class="market-stat">
+                                    <div>
+                                        <strong>DOW</strong>
+                                    </div>
+                                    <div id="dow-value">Loading...</div>
+                                </div>
+                                
+                                <div class="market-stat">
+                                    <div>
+                                        <strong>VIX</strong>
+                                        <small class="text-muted">(Volatility)</small>
+                                    </div>
+                                    <div id="vix-value">Loading...</div>
+                                </div>
+                                
+                                <p class="text-muted small mt-3 text-end" id="last-updated">Last updated: Checking...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Performers Card -->
+                    <div class="card shadow-sm market-card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0"><i class="bi bi-trophy me-2"></i>Top Performers Today</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="top-performers">
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border text-success" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<script>
+    // Function to show suggestions based on investment type
+    function showSuggestions() {
+        const investmentType = document.getElementById('investment_type').value;
+        const datalist = document.getElementById('investment-suggestions');
+        
+        // Clear existing options
+        datalist.innerHTML = '';
+        
+        // Show loading indicator
+        datalist.innerHTML = '<option value="Loading data..."></option>';
+        
+        // Update investment tips based on type
+        updateInvestmentTips(investmentType);
+        
+        // Fetch data for the selected investment type
+        if (typeof fetchInvestmentData === 'function') {
+            fetchInvestmentData(investmentType);
+        } else {
+            console.error('fetchInvestmentData function not available yet');
+            datalist.innerHTML = '<option value="Please try again in a moment..."></option>';
+        }
+    }
+    
+    // Function to update investment tips based on selected type
+    function updateInvestmentTips(investmentType) {
+        const tipsTitle = document.getElementById('investment-type-title');
+        const tipsContent = document.getElementById('investment-tips');
+        
+        switch(investmentType) {
+            case 'stock':
+                tipsTitle.textContent = 'Stock Investment Tips';
+                tipsContent.innerHTML = `
+                    <p>Stocks represent ownership in a company.</p>
+                    <ul>
+                        <li>Research company fundamentals before investing</li>
+                        <li>Consider the company's growth potential</li>
+                        <li>Look at price-to-earnings (P/E) ratio</li>
+                        <li>Diversify across different sectors</li>
+                    </ul>
+                `;
+                break;
+            case 'mutual_fund':
+                tipsTitle.textContent = 'Mutual Fund Tips';
+                tipsContent.innerHTML = `
+                    <p>Mutual funds pool money from many investors to buy securities.</p>
+                    <ul>
+                        <li>Check the fund's expense ratio</li>
+                        <li>Review the fund's historical performance</li>
+                        <li>Consider the fund manager's experience</li>
+                        <li>Look for funds that match your investment goals</li>
+                    </ul>
+                `;
+                break;
+            case 'fixed_deposit':
+                tipsTitle.textContent = 'Fixed Deposit Tips';
+                tipsContent.innerHTML = `
+                    <p>Fixed deposits offer guaranteed returns over a fixed period.</p>
+                    <ul>
+                        <li>Compare interest rates across banks</li>
+                        <li>Consider the lock-in period</li>
+                        <li>Check penalties for early withdrawal</li>
+                        <li>Good for conservative investors</li>
+                    </ul>
+                `;
+                break;
+            case 'bond':
+                tipsTitle.textContent = 'Bond Investment Tips';
+                tipsContent.innerHTML = `
+                    <p>Bonds are debt securities issued by governments or corporations.</p>
+                    <ul>
+                        <li>Check the bond's credit rating</li>
+                        <li>Consider the yield to maturity</li>
+                        <li>Be aware of interest rate risks</li>
+                        <li>Government bonds are generally safer than corporate bonds</li>
+                    </ul>
+                `;
+                break;
+            case 'etf':
+                tipsTitle.textContent = 'ETF Investment Tips';
+                tipsContent.innerHTML = `
+                    <p>ETFs are baskets of securities that trade like stocks.</p>
+                    <ul>
+                        <li>ETFs offer diversification at low cost</li>
+                        <li>Check the ETF's tracking error</li>
+                        <li>Consider the liquidity of the ETF</li>
+                        <li>ETFs can track various assets: stocks, bonds, commodities</li>
+                    </ul>
+                `;
+                break;
+            default:
+                tipsTitle.textContent = 'General Tips';
+                tipsContent.innerHTML = `
+                    <p>Select an investment type to see specific tips.</p>
+                    <ul>
+                        <li>Diversify your investments to reduce risk</li>
+                        <li>Consider your investment timeline</li>
+                        <li>Research before investing</li>
+                        <li>Start with small amounts if you're new to investing</li>
+                    </ul>
+                `;
+        }
+    }
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@2.3.1/build/global/luxon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0/dist/chartjs-adapter-luxon.min.js"></script>
+<script>
+    // Define investment options globally
+    window.investmentOptions = {
+        'stock': [],
+        'mutual_fund': [],
+        'bond': [],
+        'fixed_deposit': [],
+        'etf': []
+    };
+    
+    // Current chart period
+    window.currentPeriod = '1Y';
+    
+    // Initialize charts and data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateMarketTime();
+        initMarketOverviewChart();
+        fetchMarketData();
+        initStockTicker();
+        fetchTopPerformers();
+        
+        // Set up auto-refresh for market data
+        setInterval(fetchMarketData, 60000); // Refresh every minute
+        setInterval(updateMarketTime, 1000); // Update time every second
+    });
+    
+    // Function to update market time
+    function updateMarketTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        document.getElementById('market-time').textContent = now.toLocaleDateString('en-US', options);
+    }
+    
+    // Function to initialize the stock ticker
+    function initStockTicker() {
+        const tickerWrapper = document.getElementById('ticker-wrapper');
+        const tickerSymbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM', 'V', 'WMT'];
+        
+        // Create placeholder ticker items
+        tickerSymbols.forEach(symbol => {
+            const tickerItem = document.createElement('div');
+            tickerItem.className = 'ticker-item';
+            tickerItem.innerHTML = `<strong>${symbol}</strong> <span class="placeholder-glow"><span class="placeholder col-4"></span></span>`;
+            tickerWrapper.appendChild(tickerItem);
+        });
+        
+        // Fetch real-time data for ticker
+        fetchTickerData(tickerSymbols);
+        
+        // Set up auto-refresh for ticker
+        setInterval(() => fetchTickerData(tickerSymbols), 30000); // Refresh every 30 seconds
+    }
+    
+    // Function to fetch ticker data
+    async function fetchTickerData(symbols) {
+        try {
+            const tickerWrapper = document.getElementById('ticker-wrapper');
+            
+            // In a real application, you would fetch this data from an API
+            // For demo purposes, we'll simulate an API call with a delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Simulated data with random variations
+            const tickerData = {};
+            symbols.forEach(symbol => {
+                const basePrice = {
+                    'AAPL': 182.63, 'MSFT': 417.88, 'GOOGL': 152.19, 'AMZN': 178.75, 
+                    'TSLA': 175.21, 'META': 485.58, 'NVDA': 879.95, 'JPM': 198.47, 
+                    'V': 275.36, 'WMT': 59.84
+                }[symbol];
+                
+                // Add some random variation
+                const randomChange = (Math.random() - 0.45) * 3; // Slightly biased toward positive
+                tickerData[symbol] = { 
+                    price: basePrice * (1 + randomChange / 100),
+                    change: randomChange
+                };
+            });
+            
+            // Clear existing ticker items
+            tickerWrapper.innerHTML = '';
+            
+            // Create ticker items with real data
+            symbols.forEach(symbol => {
+                const data = tickerData[symbol];
+                const tickerItem = document.createElement('div');
+                tickerItem.className = 'ticker-item';
+                
+                const changeClass = data.change >= 0 ? 'text-success' : 'text-danger';
+                const changeSymbol = data.change >= 0 ? '+' : '';
+                
+                tickerItem.innerHTML = `
+                    <strong>${symbol}</strong> 
+                    $${data.price.toFixed(2)} 
+                    <span class="${changeClass}">${changeSymbol}${data.change.toFixed(2)}%</span>
+                `;
+                tickerWrapper.appendChild(tickerItem);
+            });
+            
+        } catch (error) {
+            console.error('Error fetching ticker data:', error);
+        }
+    }
+    
+    // Function to initialize market overview chart
+    function initMarketOverviewChart() {
+        const ctx = document.getElementById('market-overview-chart').getContext('2d');
+        
+        // Sample data - would be replaced with real API data
+        const labels = [];
+        const spData = [];
+        
+        // Generate sample data points for the day
+        const now = new Date();
+        const marketOpen = new Date(now);
+        marketOpen.setHours(9, 30, 0, 0);
+        
+        // Create data points every 30 minutes
+        for (let i = 0; i < 14; i++) {
+            const time = new Date(marketOpen);
+            time.setMinutes(marketOpen.getMinutes() + i * 30);
+            
+            if (time > now) break;
+            
+            labels.push(time);
+            
+            // Generate some random price movement
+            if (i === 0) {
+                spData.push(4200); // Start at 4200
+            } else {
+                const change = (Math.random() - 0.45) * 10; // Slightly biased toward positive
+                spData.push(spData[spData.length - 1] + change);
+            }
+        }
+        
+        // Show loading overlay
+        document.getElementById('market-chart-loading').style.display = 'flex';
+        
+        window.marketChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'S&P 500',
+                    data: spData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'hour',
+                            displayFormats: {
+                                hour: 'h:mm a'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time (EST)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Index Value'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Hide loading overlay after a delay
+        setTimeout(() => {
+            document.getElementById('market-chart-loading').style.display = 'none';
+        }, 1500);
+    }
+    
+    // Function to initialize selected investment chart
+    function initSelectedInvestmentChart(symbol, name) {
+        const ctx = document.getElementById('selected-investment-chart').getContext('2d');
+        
+        // Show loading overlay
+        document.getElementById('chart-loading').style.display = 'flex';
+        
+        // Fetch historical data based on current period
+        fetchHistoricalData(symbol, window.currentPeriod).then(chartData => {
+            if (window.investmentChart) {
+                window.investmentChart.destroy();
+            }
+            
+            window.investmentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: symbol,
+                        data: chartData.data,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: chartData.labels.length < 60 ? 3 : 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'MMM d, yyyy',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value (Normalized)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+    
+    // Function to fetch historical data for the selected investment
+    async function fetchHistoricalData(symbol, period = '1Y') {
+        try {
+            // Show loading indicator
+            document.getElementById('chart-loading').style.display = 'flex';
+            
+            // In a real application, you would fetch this data from an API
+            // For demo purposes, we'll simulate an API call with a delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Generate sample data based on the period
+            const today = new Date();
+            const labels = [];
+            const data = [];
+            
+            let days;
+            switch(period) {
+                case '1M': days = 30; break;
+                case '3M': days = 90; break;
+                case '1Y': days = 365; break;
+                case '5Y': days = 365 * 5; break;
+                default: days = 365;
+            }
+            
+            // Generate data points
+            let basePrice = 100;
+            // Different starting prices for different symbols
+            if (symbol === 'AAPL') basePrice = 180;
+            else if (symbol === 'MSFT') basePrice = 420;
+            else if (symbol === 'AMZN') basePrice = 175;
+            else if (symbol === 'GOOGL') basePrice = 150;
+            else if (symbol === 'META') basePrice = 480;
+            else if (symbol === 'TSLA') basePrice = 170;
+            else if (symbol === 'NVDA') basePrice = 880;
+            
+            // Generate data points with appropriate frequency
+            const interval = days > 365 ? 7 : days > 90 ? 3 : 1; // Weekly for 5Y, every 3 days for 1Y, daily for shorter periods
+            
+            for (let i = days; i >= 0; i -= interval) {
+                const date = new Date();
+                date.setDate(today.getDate() - i);
+                labels.push(date);
+                
+                // Generate some random price movement with trend
+                if (i === days) {
+                    data.push(basePrice); // Start at base price
+                } else {
+                    // Add some randomness but with a general upward trend
+                    const trend = (days - i) / days * 20; // Up to 20% increase over the period
+                    const volatility = Math.random() * 2 - 0.9; // Random daily change
+                    const change = (volatility + (trend / days * interval)) / 100;
+                    data.push(data[data.length - 1] * (1 + change));
+                }
+            }
+            
+            // Hide loading indicator
+            document.getElementById('chart-loading').style.display = 'none';
+            
+            return { labels, data };
+            
+        } catch (error) {
+            console.error('Error fetching historical data:', error);
+            document.getElementById('chart-loading').style.display = 'none';
+            return { labels: [], data: [] };
+        }
+    }
+    
+    // Function to change the chart period
+    function changeChartPeriod(period) {
+        window.currentPeriod = period;
+        
+        // Update active button state
+        const buttons = document.querySelectorAll('#selected-investment-card .btn-group .btn');
+        buttons.forEach(button => {
+            button.classList.remove('active');
+            if (button.textContent === period) {
+                button.classList.add('active');
+            }
+        });
+        
+        // Get the current symbol from the chart title
+        const titleElement = document.getElementById('selected-investment-title');
+        const symbolMatch = titleElement.textContent.match(/\(([A-Z]+)\)/);
+        
+        if (symbolMatch && symbolMatch[1]) {
+            const symbol = symbolMatch[1];
+            const name = titleElement.textContent.replace(/\s*\([A-Z]+\) Performance$/, '').trim();
+            
+            // Fetch new data and update chart
+            fetchHistoricalData(symbol, period).then(chartData => {
+                window.investmentChart.data.labels = chartData.labels;
+                window.investmentChart.data.datasets[0].data = chartData.data;
+                window.investmentChart.update();
+            });
+        }
+    }
+    
+    // Function to update market data with real-time information
+    async function updateMarketData() {
+        const investmentType = document.getElementById('investment_type').value;
+        
+        // Only update for stock or ETF investments
+        if (investmentType !== 'stock' && investmentType !== 'etf') return;
+        
+        try {
+            // In a real application, you would fetch this data from an API
+            // For demo purposes, we'll simulate real-time data
+            
+            // Update market status banner
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const day = now.getDay();
+            
+            // Check if market is open (9:30 AM - 4:00 PM ET, Monday-Friday)
+            const isWeekday = day >= 1 && day <= 5;
+            const isMarketHours = (hour > 9 || (hour === 9 && minute >= 30)) && hour < 16;
+            const isMarketOpen = isWeekday && isMarketHours;
+            
+            const marketStatus = document.getElementById('market-status');
+            const marketStatusBanner = document.getElementById('market-status-banner');
+            
+            if (isMarketOpen) {
+                marketStatus.textContent = 'Open';
+                marketStatus.className = 'badge bg-success pulse';
+                marketStatusBanner.textContent = 'Markets are open. Real-time data is being displayed.';
+            } else {
+                marketStatus.textContent = 'Closed';
+                marketStatus.className = 'badge bg-danger';
+                
+                if (!isWeekday) {
+                    marketStatusBanner.textContent = 'Markets are closed for the weekend. Showing last available data.';
+                } else {
+                    marketStatusBanner.textContent = 'Markets are closed. Showing last available data.';
+                }
+            }
+            
+            // Update market chart with more realistic data
+            if (window.marketChart) {
+                // Generate more realistic market data
+                const baseValue = 4200;
+                const newData = [];
+                const labels = [];
+                
+                // Create data points for today's trading session
+                const marketOpen = new Date(now);
+                marketOpen.setHours(9, 30, 0, 0);
+                
+                // Create data points every 30 minutes
+                for (let i = 0; i < 14; i++) {
+                    const time = new Date(marketOpen);
+                    time.setMinutes(marketOpen.getMinutes() + i * 30);
+                    
+                    if (time > now) break;
+                    
+                    labels.push(time);
+                    
+                    // Generate some random price movement with trend
+                    if (i === 0) {
+                        newData.push(baseValue); // Start at base value
+                    } else {
+                        // Add some randomness but with a slight trend
+                        const trend = Math.sin(i / 14 * Math.PI) * 10; // Sinusoidal trend
+                        const volatility = (Math.random() - 0.5) * 10;
+                        newData.push(newData[newData.length - 1] + trend + volatility);
+                    }
+                }
+                
+                // Update chart data
+                window.marketChart.data.labels = labels;
+                window.marketChart.data.datasets[0].data = newData;
+                window.marketChart.update();
+            }
+            
+            // Update market update time
+            document.getElementById('market-update-time').textContent = 
+                `Updated: ${now.toLocaleTimeString()}`;
+                
+            // Initialize comparison chart if not already done
+            if (document.getElementById('comparison-chart') && !window.comparisonChart) {
+                initComparisonChart();
+            }
+            
+        } catch (error) {
+            console.error('Error updating market data:', error);
+        }
+    }
+    
+    // Function to initialize comparison chart
+    function initComparisonChart() {
+        const canvas = document.getElementById('comparison-chart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Sample data for comparison
+        const labels = [];
+        const today = new Date();
+        
+        // Generate 30 days of data
+        for (let i = 30; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(today.getDate() - i);
+            labels.push(date);
+        }
+        
+        // Generate data for selected stock and indices
+        const stockData = [];
+        const spyData = [];
+        
+        // Base values
+        let stockBase = 100;
+        let spyBase = 100;
+        
+        // Generate data with different performance
+        for (let i = 0; i <= 30; i++) {
+            if (i === 0) {
+                stockData.push(stockBase);
+                spyData.push(spyBase);
+            } else {
+                // Stock outperforms slightly
+                const stockChange = (Math.random() - 0.4) * 1.5;
+                const spyChange = (Math.random() - 0.45);
+                
+                stockData.push(stockData[i-1] * (1 + stockChange / 100));
+                spyData.push(spyData[i-1] * (1 + spyChange / 100));
+            }
+        }
+        
+        // Create chart
+        window.comparisonChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Selected Investment',
+                        data: stockData,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'S&P 500',
+                        data: spyData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2,
+                        borderDash: [5, 5]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.parsed.y;
+                                return `${label}: ${value.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            tooltipFormat: 'MMM d, yyyy',
+                            displayFormats: {
+                                day: 'MMM d'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Value (Normalized)'
+                        },
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+        
+        // Show the comparison card
+        document.getElementById('investment-comparison-card').style.display = 'block';
+        
+        // Set up comparison option buttons
+        document.querySelectorAll('#comparison-options .btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('#comparison-options .btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Update comparison data
+                updateComparisonData(this.dataset.index);
+            });
+        });
+    }
+    
+    // Function to update comparison data
+    function updateComparisonData(index) {
+        if (!window.comparisonChart) return;
+        
+        // Generate new comparison data
+        const labels = window.comparisonChart.data.labels;
+        const stockData = window.comparisonChart.data.datasets[0].data;
+        const newComparisonData = [];
+        
+        // Base value
+        let baseValue = 100;
+        
+        // Generate data with different performance based on index
+        for (let i = 0; i < labels.length; i++) {
+            if (i === 0) {
+                newComparisonData.push(baseValue);
+            } else {
+                let change;
+                
+                // Different performance characteristics for different indices
+                if (index === 'QQQ') {
+                    // NASDAQ tends to be more volatile
+                    change = (Math.random() - 0.4) * 1.8;
+                } else if (index === 'IWM') {
+                    // Russell 2000 (small caps) even more volatile
+                    change = (Math.random() - 0.45) * 2;
+                } else {
+                    // S&P 500 default
+                    change = (Math.random() - 0.45);
+                }
+                
+                newComparisonData.push(newComparisonData[i-1] * (1 + change / 100));
+            }
+        }
+        
+        // Update chart data
+        window.comparisonChart.data.datasets[1].data = newComparisonData;
+        
+        // Update label
+        if (index === 'QQQ') {
+            window.comparisonChart.data.datasets[1].label = 'NASDAQ';
+        } else if (index === 'IWM') {
+            window.comparisonChart.data.datasets[1].label = 'Russell 2000';
+        } else {
+            window.comparisonChart.data.datasets[1].label = 'S&P 500';
+        }
+        
+        window.comparisonChart.update();
+    }
+    
+    // Add a market status banner update function
+    function updateMarketStatusBanner() {
+        const now = new Date();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+        const day = now.getDay();
+        
+        // Check if market is open (9:30 AM - 4:00 PM ET, Monday-Friday)
+        const isWeekday = day >= 1 && day <= 5;
+        const isMarketHours = (hour > 9 || (hour === 9 && minute >= 30)) && hour < 16;
+        const isMarketOpen = isWeekday && isMarketHours;
+        
+        const marketStatusBanner = document.getElementById('market-status-banner');
+        if (!marketStatusBanner) return;
+        
+        if (isMarketOpen) {
+            marketStatusBanner.textContent = 'Markets are open. Real-time data is being displayed.';
+        } else {
+            if (!isWeekday) {
+                marketStatusBanner.textContent = 'Markets are closed for the weekend. Showing last available data.';
+            } else if (hour < 9 || (hour === 9 && minute < 30)) {
+                marketStatusBanner.textContent = 'Markets will open at 9:30 AM ET. Showing last available data.';
+            } else {
+                marketStatusBanner.textContent = 'Markets are closed. Showing last available data.';
+            }
+        }
+    }
+    
+    // Set up auto-refresh for market data
+    setInterval(fetchMarketData, 60000); // Refresh every minute
+    setInterval(updateMarketStatusBanner, 60000); // Update banner every minute
+
+    // Function to initialize selected investment chart
+    function initSelectedInvestmentChart(symbol, name) {
+        const ctx = document.getElementById('selected-investment-chart').getContext('2d');
+        
+        // Show loading overlay
+        document.getElementById('chart-loading').style.display = 'flex';
+        
+        // Fetch historical data based on current period
+        fetchHistoricalData(symbol, window.currentPeriod).then(chartData => {
+            if (window.investmentChart) {
+                window.investmentChart.destroy();
+            }
+            
+            window.investmentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: symbol,
+                        data: chartData.data,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: chartData.labels.length < 60 ? 3 : 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                tooltipFormat: 'MMM d, yyyy',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value (Normalized)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+            
+            // Update the chart title
+            document.getElementById('selected-investment-title').textContent = `${name} (${symbol}) Performance`;
+            
+            // Show the investment card
+            document.getElementById('selected-investment-card').style.display = 'block';
+            
+            // Update investment details
+            updateInvestmentDetails(symbol);
+        });
+    }
+
+    // Function to update investment details
+    function updateInvestmentDetails(symbol) {
+        const detailsContainer = document.getElementById('investment-details');
+        
+        // In a real application, you would fetch this data from an API
+        // For demo purposes, we'll use simulated data
+        const details = {
+            'AAPL': {
+                name: 'Apple Inc.',
+                sector: 'Technology',
+                pe: '28.45',
+                dividend: '0.58%',
+                marketCap: '$2.85T',
+                volume: '58.2M'
+            },
+            'MSFT': {
+                name: 'Microsoft Corporation',
+                sector: 'Technology',
+                pe: '35.12',
+                dividend: '0.72%',
+                marketCap: '$3.12T',
+                volume: '25.7M'
+            },
+            'AMZN': {
+                name: 'Amazon.com Inc.',
+                sector: 'Consumer Cyclical',
+                pe: '59.87',
+                dividend: '0%',
+                marketCap: '$1.78T',
+                volume: '32.1M'
+            },
+            'GOOGL': {
+                name: 'Alphabet Inc.',
+                sector: 'Communication Services',
+                pe: '25.63',
+                dividend: '0%',
+                marketCap: '$1.95T',
+                volume: '22.8M'
+            },
+            'META': {
+                name: 'Meta Platforms Inc.',
+                sector: 'Communication Services',
+                pe: '32.18',
+                dividend: '0.45%',
+                marketCap: '$1.25T',
+                volume: '18.3M'
+            },
+            'TSLA': {
+                name: 'Tesla Inc.',
+                sector: 'Automotive',
+                pe: '48.72',
+                dividend: '0%',
+                marketCap: '$545B',
+                volume: '105.6M'
+            },
+            'NVDA': {
+                name: 'NVIDIA Corporation',
+                sector: 'Technology',
+                pe: '72.35',
+                dividend: '0.05%',
+                marketCap: '$2.15T',
+                volume: '45.9M'
+            }
+        };
+        
+        // Default details if symbol not found
+        const detail = details[symbol] || {
+            name: 'Unknown',
+            sector: 'N/A',
+            pe: 'N/A',
+            dividend: 'N/A',
+            marketCap: 'N/A',
+            volume: 'N/A'
+        };
+        
+        // Update details HTML
+        detailsContainer.innerHTML = `
+            <div class="col-md-6 col-lg-3 mb-2">
+                <div class="detail-item">
+                    <div class="detail-label">Sector</div>
+                    <div class="detail-value">${detail.sector}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-2">
+                <div class="detail-item">
+                    <div class="detail-label">P/E Ratio</div>
+                    <div class="detail-value">${detail.pe}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-2">
+                <div class="detail-item">
+                    <div class="detail-label">Dividend Yield</div>
+                    <div class="detail-value">${detail.dividend}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-2">
+                <div class="detail-item">
+                    <div class="detail-label">Market Cap</div>
+                    <div class="detail-value">${detail.marketCap}</div>
+                </div>
+            </div>
+        `;
+    }
+    // Function to fetch market data
+    async function fetchMarketData() {
+        try {
+            // In a real application, you would fetch this data from an API
+            // For demo purposes, we'll simulate an API call with a delay
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            // Update market indices with simulated data
+            const now = new Date();
+            const isMarketOpen = isMarketCurrentlyOpen();
+            
+            // Generate random changes for indices
+            const spChange = (Math.random() - 0.45) * 2;
+            const nasdaqChange = (Math.random() - 0.4) * 2.2;
+            const dowChange = (Math.random() - 0.48) * 1.8;
+            const vixChange = (Math.random() - 0.3) * 5;
+            
+            // Base values
+            const sp500 = 4200 + (Math.random() - 0.5) * 50;
+            const nasdaq = 14200 + (Math.random() - 0.5) * 150;
+            const dow = 33500 + (Math.random() - 0.5) * 300;
+            const vix = 18 + (Math.random() - 0.5) * 5;
+            
+            // Update DOM elements
+            document.getElementById('sp500-value').innerHTML = formatMarketValue(sp500, spChange);
+            document.getElementById('nasdaq-value').innerHTML = formatMarketValue(nasdaq, nasdaqChange);
+            document.getElementById('dow-value').innerHTML = formatMarketValue(dow, dowChange);
+            document.getElementById('vix-value').innerHTML = formatMarketValue(vix, vixChange);
+            
+            // Update market status
+            const marketStatus = document.getElementById('market-status');
+            if (isMarketOpen) {
+                marketStatus.textContent = 'Open';
+                marketStatus.className = 'badge bg-success pulse';
+            } else {
+                marketStatus.textContent = 'Closed';
+                marketStatus.className = 'badge bg-danger';
+            }
+            
+            // Update last updated time
+            document.getElementById('last-updated').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+            
+            // Update market status banner
+            updateMarketStatusBanner();
+            
+            // Fetch top performers if needed
+            if (!document.getElementById('top-performers').innerHTML.includes('table')) {
+                fetchTopPerformers();
+            }
+            
+        } catch (error) {
+            console.error('Error fetching market data:', error);
+        }
+    }
+    
+    // Helper function to format market values with change indicators
+    function formatMarketValue(value, change) {
+        const changeClass = change >= 0 ? 'text-success' : 'text-danger';
+        const changeIcon = change >= 0 ? '<i class="bi bi-arrow-up-right"></i>' : '<i class="bi bi-arrow-down-right"></i>';
+        
+        return `
+            <div>${value.toFixed(2)}</div>
+            <div class="${changeClass}">
+                ${changeIcon} ${Math.abs(change).toFixed(2)}%
+            </div>
+        `;
+    }
+    
+    // Helper function to check if market is currently open
+    function isMarketCurrentlyOpen() {
+        const now = new Date();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+        const day = now.getDay();
+        
+        // Check if market is open (9:30 AM - 4:00 PM ET, Monday-Friday)
+        const isWeekday = day >= 1 && day <= 5;
+        const isMarketHours = (hour > 9 || (hour === 9 && minute >= 30)) && hour < 16;
+        
+        return isWeekday && isMarketHours;
+    }
+    
+    // Function to fetch top performers
+    async function fetchTopPerformers() {
+        try {
+            // In a real application, you would fetch this data from an API
+            // For demo purposes, we'll simulate an API call with a delay
+            await new Promise(resolve => setTimeout(resolve, 1200));
+            
+            // Sample top performers data
+            const topPerformers = [
+                { symbol: 'NVDA', name: 'NVIDIA Corporation', change: 5.82 },
+                { symbol: 'AMD', name: 'Advanced Micro Devices', change: 4.37 },
+                { symbol: 'AAPL', name: 'Apple Inc.', change: 3.21 },
+                { symbol: 'MSFT', name: 'Microsoft Corporation', change: 2.85 },
+                { symbol: 'AMZN', name: 'Amazon.com Inc.', change: 2.63 }
+            ];
+            
+            // Create HTML for top performers
+            let html = `
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            topPerformers.forEach(stock => {
+                html += `
+                    <tr>
+                        <td><strong>${stock.symbol}</strong></td>
+                        <td>${stock.name}</td>
+                        <td class="text-success">+${stock.change.toFixed(2)}%</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+                <p class="text-muted small text-end mb-0">Based on S&P 500 components</p>
+            `;
+            
+            // Update DOM
+            document.getElementById('top-performers').innerHTML = html;
+            
+        } catch (error) {
+            console.error('Error fetching top performers:', error);
+            document.getElementById('top-performers').innerHTML = '<p class="text-danger">Error loading top performers</p>';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,313 @@
+upload cheque
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Cheque | RJM Bank</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f9f8ff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .overview-card,
+        .account-card {
+            border-radius: 12px;
+            background: #f7f6fd;
+            padding: 20px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .overview-card:hover,
+        .account-card:hover {
+            background: #ecebfa;
+            cursor: pointer;
+            border-color: #d5d3f5;
+        }
+
+        .form-control:disabled {
+            background-color: #f3f3fd;
+        }
+
+        .btn-primary {
+            background-color: #6a4dfc;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #563bd9;
+        }
+
+        .form-check-input:checked {
+            background-color: #6a4dfc;
+            border-color: #6a4dfc;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: #6a4dfc;
+            color: #fff !important;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .toggle-btn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
+        <a class="navbar-brand fw-bold" href="#">RJM Bank</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-3">
+                <li class="nav-item"><a class="nav-link active" href="#">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Deposits</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Accounts</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
+            </ul>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-primary">Help</button>
+            <button class="btn btn-primary btn-sm">Deposit Cheque</button>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">Cheque Deposits</a></li>
+                <li class="breadcrumb-item active" aria-current="page">New Deposit</li>
+            </ol>
+        </nav>
+
+        <!-- Upload Section -->
+        <h4>Upload Cheque Image</h4>
+        <p>Please upload a clear image of your cheque</p>
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="overview-card text-center">
+                    <h6>Cheque Image</h6>
+                    <p>Upload a clear image of the front side of your cheque</p>
+                    <button type="button" class="btn btn-primary" id="front-upload-btn">Upload Image</button>
+                    <div id="front-preview-container" style="display: none; margin-top: 15px;">
+                        <img id="front-preview" style="max-width: 100%; max-height: 300px; object-fit: contain;" class="img-fluid rounded shadow-sm">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cheque Details section - making fields editable -->
+        <h5>Cheque Details</h5>
+        <p>We've automatically extracted the following information. Please verify or edit if needed.</p>
+        <div class="mb-4">
+            <div class="mb-3">
+                <label>Payee Name</label>
+                <input type="text" class="form-control" name="payee_name" value="John Smith">
+            </div>
+            <div class="mb-3">
+                <label>Amount</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" name="amount" value="1,250.00">
+                    <span class="input-group-text">$</span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>Cheque Number</label>
+                <input type="text" class="form-control" name="cheque_number" value="1234567">
+            </div>
+            <div class="mb-3">
+                <label>Issuing Bank</label>
+                <input type="text" class="form-control" name="bank_name" value="First National Bank">
+            </div>
+            
+            <div class="mb-3">
+                <label>Date of Issue</label>
+                <input type="date" class="form-control" name="date_of_issue" value="2023-10-15">
+            </div>
+        </div>
+
+        <!-- Deposit Account -->
+        <h5>Deposit Account</h5>
+        <p>Select the account where you want to deposit this cheque</p>
+        <div class="row g-3 mb-4" id="accounts-container">
+            <!-- Account data will be loaded here -->
+            <div class="col-12 text-center" id="accounts-loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading accounts...</span>
+                </div>
+                <p class="mt-2">Loading your accounts...</p>
+            </div>
+        </div>
+
+        <!-- Terms & Actions -->
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="termsSwitch">
+            <label class="form-check-label" for="termsSwitch">I confirm that the information provided is accurate</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary">Cancel</button>
+            <button class="btn btn-primary">Submit Deposit</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Add hidden file input elements -->
+    <input type="file" id="front_side_input" style="display: none;" accept="image/*">
+    <input type="file" id="back_side_input" style="display: none;" accept="image/*">
+
+    <!-- Add JavaScript to handle the upload buttons -->
+    <script>
+        $(document).ready(function() {
+            // Front side upload button click handler
+            $('#front-upload-btn').click(function() {
+                $('#front_side_input').click();
+            });
+            
+            // Back side upload button click handler
+            $('#back-upload-btn').click(function() {
+                $('#back_side_input').click();
+            });
+            
+            // Handle front side image preview
+            $('#front_side_input').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Display preview image
+                        $('#front-preview').attr('src', e.target.result).show();
+                        $('#front-preview-container').show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Handle back side image preview
+            $('#back_side_input').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Display preview image
+                        $('#back-preview').attr('src', e.target.result).show();
+                        $('#back-preview-container').show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Fetch account data from the database
+            fetchAccountData();
+        });
+        
+        // Function to fetch account data from the database
+        function fetchAccountData() {
+            // Show loading indicator
+            $('#accounts-loading').show();
+            
+            // Make an AJAX call to fetch the current user's account data
+            $.ajax({
+                url: '/api/user-accounts/',
+                method: 'GET',
+                success: function(data) {
+                    renderAccounts(data);
+                },
+                error: function() {
+                    // If API fails, use this structure but with dynamic data
+                    const accountData = {
+                        savingsAccounts: [
+                            { id: 1, accountNumber: '7951472551', balance: 25000.00, type: 'Primary' }
+                        ],
+                        loanAccounts: [
+                            { id: 1, loanId: '12345', outstanding: 25000.00, type: 'Home Loan' },
+                            { id: 2, loanId: '67890', outstanding: 15000.00, type: 'Personal Loan' }
+                        ]
+                    };
+                    
+                    // Render the accounts with the fallback data
+                    setTimeout(() => {
+                        renderAccounts(accountData);
+                    }, 1000);
+                }
+            });
+        }
+        
+        // Function to render account data
+        function renderAccounts(data) {
+            // Hide loading indicator
+            $('#accounts-loading').hide();
+            
+            // Clear existing content
+            $('#accounts-container').empty();
+            
+            // Render savings accounts section
+            if (data.savingsAccounts && data.savingsAccounts.length > 0) {
+                const account = data.savingsAccounts[0]; // Get the first savings account
+                const savingsHtml = `
+                <div class="col-md-4">
+                    <div class="account-card">
+                        <div>
+                            <h6><i class="bi bi-piggy-bank-fill"></i> Savings Account</h6>
+                            <p>Account ${account.accountNumber}</p>
+                            <p>Balance: $${account.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                            <p>Account Number: ${account.accountNumber}</p>
+                        </div>
+                        <select class="form-select mt-2" name="account_selection" data-account-id="${account.id}" data-account-type="savings">
+                            <option value="">Select</option>
+                            <option value="primary" ${account.type === 'Primary' ? 'selected' : ''}>Primary</option>
+                            <option value="secondary" ${account.type === 'Secondary' ? 'selected' : ''}>Secondary</option>
+                        </select>
+                    </div>
+                </div>`;
+                $('#accounts-container').append(savingsHtml);
+            }
+            
+            // Render loan accounts
+            if (data.loanAccounts && data.loanAccounts.length > 0) {
+                data.loanAccounts.forEach(loan => {
+                    const loanHtml = `
+                    <div class="col-md-4">
+                        <div class="account-card">
+                            <div>
+                                <h6><i class="bi bi-bank2"></i> ${loan.type}</h6>
+                                <p>Loan #${loan.loanId}</p>
+                                <p>Outstanding: $${loan.outstanding.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                            </div>
+                            <select class="form-select mt-2" name="account_selection" data-account-id="${loan.id}" data-account-type="loan">
+                                <option value="">Select</option>
+                                <option value="primary">Primary</option>
+                                <option value="secondary">Secondary</option>
+                            </select>
+                        </div>
+                    </div>`;
+                    $('#accounts-container').append(loanHtml);
+                });
+            }
+            
+            // Add event listener for account selection
+            $('select[name="account_selection"]').change(function() {
+                // Deselect all other options
+                if ($(this).val() !== '') {
+                    $('select[name="account_selection"]').not(this).val('');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Investment Portal{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Investment Portal</h1>
+    
+    {% csrf_token %}
+    
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>Market Overview</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">S&P 500</div>
+                        <div class="card-body">
+                            <h4 id="sp500-value">Loading...</h4>
+                            <p>Change: <span id="sp500-change">...</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">NASDAQ</div>
+                        <div class="card-body">
+                            <h4 id="nasdaq-value">Loading...</h4>
+                            <p>Change: <span id="nasdaq-change">...</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">NIFTY 50</div>
+                        <div class="card-body">
+                            <h4 id="nifty-value">Loading...</h4>
+                            <p>Change: <span id="nifty-change">...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3>Stock Search</h3>
+                </div>
+                <div class="card-body">
+                    <form id="stock-search-form">
+                        <div class="input-group">
+                            <input type="text" id="stock-symbol" class="form-control" placeholder="Enter stock symbol (e.g., AAPL, MSFT, RELIANCE.NS)">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="stock-result"></div>
+                    <div id="investment-form"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3>Your Portfolio</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Shares</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if investments %}
+                                {% for investment in investments %}
+                                <tr>
+                                    <td>{{ investment.symbol|default:"N/A" }}</td>
+                                    <td>{{ investment.shares }}</td>
+                                    <td>${{ investment.current_value|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No investments found</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    <a href="{% url 'view_investments' %}" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'js/investment.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        // Fetch market data
+        fetchMarketData();
+        
+        // Function to fetch market data
+        function fetchMarketData() {
+            console.log("Fetching market data...");
+            
+            // Make API calls to get real market data
+            $.ajax({
+                url: '/api/market-data/',
+                type: 'GET',
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update S&P 500
+                        $('#sp500-value').text(response.sp500.value);
+                        $('#sp500-change').text(response.sp500.change)
+                            .addClass(parseFloat(response.sp500.change) >= 0 ? 'text-success' : 'text-danger');
+                        
+                        // Update NASDAQ
+                        $('#nasdaq-value').text(response.nasdaq.value);
+                        $('#nasdaq-change').text(response.nasdaq.change)
+                            .addClass(parseFloat(response.nasdaq.change) >= 0 ? 'text-success' : 'text-danger');
+                        
+                        // Update NIFTY 50
+                        $('#nifty-value').text(response.nifty.value);
+                        $('#nifty-change').text(response.nifty.change)
+                            .addClass(parseFloat(response.nifty.change) >= 0 ? 'text-success' : 'text-danger');
+                        
+                        console.log("Market data updated from API");
+                    } else {
+                        // Fallback to mock data if API fails
+                        console.log("API failed, using fallback data");
+                        useFallbackData();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching market data:", error);
+                    useFallbackData();
+                }
+            });
+        }
+        
+        // Fallback function for when API fails
+        function useFallbackData() {
+            // S&P 500
+            $('#sp500-value').text('5,456.90');
+            $('#sp500-change').text('+9.52%').addClass('text-success');
+            
+            // NASDAQ
+            $('#nasdaq-value').text('15,990.66');
+            $('#nasdaq-change').text('+1.25%').addClass('text-success');
+            
+            // NIFTY 50
+            $('#nifty-value').text('22,055.70');
+            $('#nifty-change').text('+0.72%').addClass('text-success');
+            
+            console.log("Using fallback market data");
+        }
+        
+        // Handle stock search form submission
+        $('#stock-search-form').on('submit', function(e) {
+            e.preventDefault();
+            const symbol = $('#stock-symbol').val().trim();
+            if (!symbol) {
+                alert('Please enter a stock symbol');
+                return;
+            }
+            
+            // Show loading indicator
+            $('#stock-result').html('<div class="text-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>');
+            
+            console.log("Searching for stock:", symbol);
+            
+            // Fetch real-time data from Yahoo Finance API via a proxy
+            $.ajax({
+                url: '/api/stock-data/',
+                type: 'GET',
+                data: {
+                    symbol: symbol
+                },
+                headers: {
+                    'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        const stockData = response.data;
+                        
+                        // Check if it's an Indian stock (ends with .NS)
+                        const isIndianStock = stockData.symbol.endsWith('.NS');
+                        let displayPrice = parseFloat(stockData.price);
+                        let originalPrice = '';
+                        
+                        // Convert price from INR to USD for Indian stocks
+                        if (isIndianStock) {
+                            originalPrice = `<small class="d-block text-muted">(₹${displayPrice.toLocaleString()})</small>`;
+                            displayPrice = (displayPrice / 83).toFixed(2);
+                        }
+                        
+                        // Format change as percentage with color
+                        const changeClass = parseFloat(stockData.change) >= 0 ? 'text-success' : 'text-danger';
+                        const changeSign = parseFloat(stockData.change) >= 0 ? '+' : '';
+                        
+                        // Display stock information
+                        $('#stock-result').html(`
+                            <div class="card mt-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h4>${stockData.name} (${stockData.symbol})</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Price:</strong> $${displayPrice} ${originalPrice}</p>
+                                    <p><strong>Change:</strong> <span class="${changeClass}">${changeSign}${stockData.change}%</span></p>
+                                    <p><strong>Volume:</strong> ${stockData.volume.toLocaleString()}</p>
+                                    <button class="btn btn-success" id="invest-now-btn">Invest Now</button>
+                                </div>
+                            </div>
+                        `);
+                        
+                        // Store the converted price for investment calculations
+                        stockData.displayPrice = displayPrice;
+                        
+                        // Handle Invest Now button click
+                        $('#invest-now-btn').on('click', function() {
+                            showInvestmentForm(stockData);
+                        });
+                    } else {
+                        $('#stock-result').html(`
+                            <div class="alert alert-danger mt-3">
+                                ${response.message || 'Error fetching stock data. Please try again.'}
+                            </div>
+                        `);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#stock-result').html(`
+                        <div class="alert alert-danger mt-3">
+                            Error fetching stock data. Please try again.
+                        </div>
+                    `);
+                    console.error("Error fetching stock data:", error);
+                }
+            });
+        });
+        
+        // Function to show investment form
+        function showInvestmentForm(stockData) {
+            // Use the converted price for Indian stocks
+            const priceToUse = stockData.displayPrice || stockData.price;
+            
+            // Create investment form
+            $('#investment-form').html(`
+                <div class="card mt-3">
+                    <div class="card-header bg-primary text-white">
+                        <h4>Invest in ${stockData.name} (${stockData.symbol})</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="confirm-investment-form">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${$('input[name="csrfmiddlewaretoken"]').val()}">
+                            <input type="hidden" name="symbol" value="${stockData.symbol}">
+                            <input type="hidden" name="stock_name" value="${stockData.name}">
+                            <input type="hidden" name="price_per_share" value="${priceToUse}">
+                            <input type="hidden" name="is_indian_stock" value="${stockData.symbol.endsWith('.NS')}">
+                            
+                            <div class="form-group">
+                                <label for="shares">Number of Shares</label>
+                                <input type="number" class="form-control" id="shares" name="shares" min="1" step="1" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="account_number">Account</label>
+                                <select class="form-control" id="account_number" name="account_number" required>
+                                    <option value="">Select an account</option>
+                                    {% for account in user_accounts %}
+                                        <option value="{{ account.account_number }}" data-balance="{{ account.balance }}">
+                                            {{ account.account_number }} (Balance: ${{ account.balance|floatformat:2 }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div id="account-message"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Total Cost: <span id="total-cost">$0.00</span></label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Confirm Investment</button>
+                        </form>
+                    </div>
+                </div>
+            `);
+            
+            // Check if there are any investment accounts
+            const hasInvestmentAccounts = $('#account_number option').length > 1;
+            
+            // Add click handler to account dropdown
+            $('#account_number').on('click', function() {
+                if (!hasInvestmentAccounts) {
+                    // Show loading message
+                    $('#account-message').html(`
+                        <div class="alert alert-info mt-2">
+                            <i class="spinner-border spinner-border-sm"></i> Creating investment account for you...
+                        </div>
+                    `);
+                    
+                    // Create investment account automatically
+                    $.ajax({
+                        url: '/api/create-account/',
+                        type: 'POST',
+                        data: {
+                            account_type: 'Investment',
+                            initial_deposit: 1000, // Default initial deposit
+                            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Add the new account to the dropdown
+                                $('#account_number').append(`
+                                    <option value="${response.account.account_number}" data-balance="${response.account.balance}" selected>
+                                        ${response.account.account_number} (Balance: $${parseFloat(response.account.balance).toFixed(2)})
+                                    </option>
+                                `);
+                                
+                                // Show success message
+                                $('#account-message').html(`
+                                    <div class="alert alert-success mt-2">
+                                        <i class="bi bi-check-circle"></i> Investment account created successfully!
+                                    </div>
+                                `);
+                                
+                                // Hide message after 3 seconds
+                                setTimeout(function() {
+                                    $('#account-message').html('');
+                                }, 3000);
+                            } else {
+                                // Show error message
+                                $('#account-message').html(`
+                                    <div class="alert alert-danger mt-2">
+                                        <i class="bi bi-exclamation-triangle"></i> Error: ${response.message}
+                                    </div>
+                                `);
+                            }
+                        },
+                        error: function() {
+                            // Show error message
+                            $('#account-message').html(`
+                                <div class="alert alert-danger mt-2">
+                                    <i class="bi bi-exclamation-triangle"></i> Error creating account. Please try again.
+                                </div>
+                            `);
+                        }
+                    });
+                }
+            });
+            
+            // Calculate total cost when shares change
+            $('#shares').on('input', function() {
+                const shares = $(this).val() || 0;
+                // Use the converted price (displayPrice) instead of the original price
+                const price = parseFloat(priceToUse);
+                const totalCost = shares * price;
+                $('#total-cost').text('$' + totalCost.toFixed(2));
+            });
+            
+            // Handle form submission
+            $('#confirm-investment-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const shares = $('#shares').val();
+                const accountNumber = $('#account_number').val();
+                const selectedOption = $('#account_number option:selected');
+                const accountBalance = parseFloat(selectedOption.data('balance') || 0);
+                // Use the converted price here too
+                const totalCost = shares * parseFloat(priceToUse);
+                
+                if (totalCost > accountBalance) {
+                    alert('Insufficient funds in your account');
+                    return;
+                }
+                
+                // Show loading indicator
+                $('#investment-form').append('<div class="mt-3 text-center"><div class="spinner-border" role="status"><span class="sr-only">Processing...</span></div></div>');
+                
+                // Submit the form via AJAX
+                $.ajax({
+                    url: '/investment/create/',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    headers: {
+                        'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Investment created successfully!');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + (response.message || 'Unknown error'));
+                        }
+                    },
+                    error: function() {
+                        alert('Error processing investment. Please try again.');
+                    }
+                });
+            });
+        }
+        
+        // Fetch fresh account data on page load
+        $.ajax({
+            url: '/api/user-accounts/',
+            type: 'GET',
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            success: function(response) {
+                console.log("Fresh account data received:", response);
+                
+                if (response.success && response.accounts && response.accounts.length > 0) {
+                    // Update account dropdown with fresh data
+                    const accountSelect = $('#account-select');
+                    if (accountSelect.length) {
+                        accountSelect.empty();
+                        accountSelect.append('<option value="">Select an account</option>');
+                        
+                        response.accounts.forEach(account => {
+                            accountSelect.append(`
+                                <option value="${account.id}" data-number="${account.account_number}" data-balance="${account.balance}">
+                                    ${account.account_number} (Balance: $${parseFloat(account.balance).toFixed(2)})
+                                </option>
+                            `);
+                        });
+                        
+                        // Set first account as selected by default
+                        if (response.accounts.length > 0) {
+                            accountSelect.val(response.accounts[0].id);
+                            updateAccountBalance();
+                        }
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching fresh account data:", error);
+            }
+        });
+        
+        // Update balance display when account is selected
+        $('#account-select').on('change', function() {
+            updateAccountBalance();
+        });
+        
+        function updateAccountBalance() {
+            const selectedOption = $('#account-select option:selected');
+            const balance = selectedOption.data('balance') || 0;
+            $('#account-balance').text('$' + parseFloat(balance).toFixed(2));
+            
+            // Also update the account dropdown in the investment form if it exists
+            if ($('#account').length) {
+                $('#account').val($('#account-select').val());
+            }
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

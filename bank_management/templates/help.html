@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RJM Bank - Help</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #f8f9fe;
+            --text-color: #333;
+            --light-gray: #e0e0e0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            background-color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            padding: 15px 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .nav-link {
+            color: var(--text-color);
+            padding: 0 15px;
+        }
+        
+        .help-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .help-header {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+        
+        .help-subheader {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-weight: normal;
+        }
+        
+        .help-card {
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+        }
+        
+        .help-icon {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .help-icon i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        
+        .help-title {
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(108, 92, 231, 0.25);
+        }
+        
+        .contact-info {
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .contact-info i {
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+            font-size: 14px;
+            padding-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .help-container {
+                padding: 10px;
+            }
+            
+            .help-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'homepage' %}">RJM Bank</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'homepage' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'services' %}">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about_us' %}">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'help' %}">Help</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Help Container -->
+    <div class="container help-container">
+        <div class="help-header">
+            <h2>Help Center</h2>
+        </div>
+        <div class="help-subheader">
+            <p>Find answers to frequently asked questions about RJM Bank services</p>
+        </div>
+        
+        <div class="help-card">
+            <div class="help-icon">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <h4 class="help-title">Frequently Asked Questions</h4>
+            
+            <div class="accordion" id="helpAccordion">
+                <!-- Account Management -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Account Management
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            <h5>How do I create a new account?</h5>
+                            <p>To create a new account, click on the "Sign Up" button on the login page. Fill in your personal details, create a username and password, and submit the form. Your account will be reviewed and activated within 24 hours.</p>
+                            
+                            <h5>How do I reset my password?</h5>
+                            <p>Click on the "Forgot password?" link on the login page. Enter your registered email address, and we'll send you instructions to reset your password.</p>
+                            
+                            <h5>How do I update my personal information?</h5>
+                            <p>After logging in, navigate to your profile settings. You can update your contact information, address, and other personal details there.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transactions -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Transactions & Transfers
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            <h5>How do I transfer funds to another account?</h5>
+                            <p>After logging in, go to the "Transfer" section. Enter the recipient's account number, the amount you wish to transfer, and your PIN to confirm the transaction.</p>
+                            
+                            <h5>What is the daily transfer limit?</h5>
+                            <p>The standard daily transfer limit is $10,000. For higher limits, please contact our customer service.</p>
+                            
+                            <h5>How long does it take for a transfer to be processed?</h5>
+                            <p>Transfers between RJM Bank accounts are processed instantly. Transfers to other banks typically take 1-2 business days.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loans -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Loans & Credit
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            <h5>How do I apply for a loan?</h5>
+                            <p>After logging in, navigate to the "Loans" section and select "Apply for a Loan." Fill in the required information, including the loan amount, purpose, and term. Your application will be reviewed, and you'll receive a decision within 2-3 business days.</p>
+                            
+                            <h5>What factors affect my loan approval?</h5>
+                            <p>Loan approval is based on several factors, including your CIBIL score, income, existing debts, and credit history.</p>
+                            
+                            <h5>How do I check my loan status?</h5>
+                            <p>You can check the status of your loan application in the "Loans" section of your account dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            Security & Privacy
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body">
+                            <h5>How does RJM Bank protect my account?</h5>
+                            <p>We use industry-standard encryption and multi-factor authentication to protect your account. All transactions require PIN verification.</p>
+                            
+                            <h5>What should I do if I suspect unauthorized activity?</h5>
+                            <p>If you notice any suspicious activity, immediately change your password and contact our customer service at the number below.</p>
+                            
+                            <h5>How often should I change my password?</h5>
+                            <p>We recommend changing your password every 3 months for optimal security.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="contact-info">
+            <h5>Still need help?</h5>
+            <p><i class="bi bi-telephone"></i> Call us: 1-800-RJM-BANK (1-800-756-2265)</p>
+            <p><i class="bi bi-envelope"></i> Email: support@rjmbank.com</p>
+            <p><i class="bi bi-clock"></i> Hours: Monday-Friday, 9:00 AM - 6:00 PM</p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 RJM Bank. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

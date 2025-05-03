@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Spending Overview</h2>
+    
+    <!-- Add this section for totals -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Income</h5>
+                    <h3 class="card-text" id="totalIncome">$0.00</h3>  <!-- Changed to dollar symbol -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Expenses</h5>
+                    <h3 class="card-text" id="totalExpense">$0.00</h3>  <!-- Changed to dollar symbol -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Monthly Expense Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="expenseChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">Expense Categories</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Recent Transactions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-end">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-table">
+                            <!-- Transactions will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Fetch transaction data when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchTransactionData();
+    });
+    
+    function fetchTransactionData() {
+        fetch('/get_transaction_data/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update totals with dollar symbol
+                    document.getElementById('totalIncome').textContent = '$' + data.total_income.toFixed(2);
+                    document.getElementById('totalExpense').textContent = '$' + data.total_expense.toFixed(2);
+                    
+                    // Render the monthly chart with the monthly_data from the API
+                    renderMonthlyChart(data.monthly_data);
+                    
+                    // Render the category chart and transaction table
+                    renderCategoryChart(data.categories);
+                    renderTransactionTable(data.transactions);
+                } else {
+                    console.error('Error fetching transaction data:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+    
+    function renderMonthlyChart(monthlyData) {
+        const monthlyCtx = document.getElementById('expenseChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: monthlyData.labels,
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: monthlyData.income,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Expenses',
+                        data: monthlyData.expenses,
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount ($)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function renderCategoryChart(categories) {
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categories.map(cat => cat.category),
+                datasets: [{
+                    data: categories.map(cat => cat.amount),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(199, 199, 199, 0.6)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
+    
+    function renderTransactionTable(transactions) {
+        // Your existing renderTransactionTable function
+        const tableBody = document.getElementById('transactions-table');
+        tableBody.innerHTML = '';
+        
+        transactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            
+            const dateCell = document.createElement('td');
+            dateCell.textContent = transaction.date;
+            
+            const descriptionCell = document.createElement('td');
+            descriptionCell.textContent = transaction.description;
+            
+            const categoryCell = document.createElement('td');
+            categoryCell.textContent = transaction.category || 'Uncategorized';
+            
+            const amountCell = document.createElement('td');
+            amountCell.textContent = `$${transaction.amount.toFixed(2)}`;
+            amountCell.className = 'text-end';
+            
+            const typeCell = document.createElement('td');
+            typeCell.textContent = transaction.transaction_type === 'credit' ? 'Credit' : 'Debit';
+            typeCell.className = 'text-end';
+            
+            row.appendChild(dateCell);
+            row.appendChild(descriptionCell);
+            row.appendChild(categoryCell);
+            row.appendChild(amountCell);
+            row.appendChild(typeCell);
+            
+            tableBody.appendChild(row);
+        });
+    }
+</script>
+{% endblock %}

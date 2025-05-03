@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Learn More - RJM Bank{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{% url 'homepage' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+    
+    <h1 class="mb-4">Learn More About RJM Bank</h1>
+    
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <h3>Modern Banking for Modern Life</h3>
+            <p>At RJM Bank, we're reimagining what banking can be. Our digital-first approach means you can manage your finances anytime, anywhere, with just a few taps on your device.</p>
+            
+            <h3 class="mt-4">Why Choose RJM Bank?</h3>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">No Hidden Fees</h5>
+                    <p class="card-text">We believe in transparency. That's why we don't charge monthly maintenance fees, minimum balance fees, or overdraft fees.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Higher Interest Rates</h5>
+                    <p class="card-text">Earn more on your savings with our competitive interest rates that are up to 10x the national average.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Advanced Security</h5>
+                    <p class="card-text">Your security is our priority. We use state-of-the-art encryption and multi-factor authentication to keep your account safe.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">24/7 Support</h5>
+                    <p class="card-text">Our customer support team is available around the clock to assist you with any questions or issues.</p>
+                </div>
+            </div>
+            
+            <h3 class="mt-4">Our Products</h3>
+            <p>Explore our range of financial products designed to meet your needs:</p>
+            <ul class="list-group mb-4">
+                <li class="list-group-item">Checking Accounts</li>
+                <li class="list-group-item">Savings Accounts</li>
+                <li class="list-group-item">Personal Loans</li>
+    
+                <li class="list-group-item">Investment Options</li>
+                <li class="list-group-item">Cheque Deposits</li>
+            </ul>
+            
+            <a href="{% url 'services' %}" class="btn btn-primary ">View All Services</a>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">Ready to Join?</h4>
+                    <p class="card-text">Open an account in minutes and start experiencing the future of banking today.</p>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Sign Up Now</a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Have Questions?</h4>
+                    <p class="card-text">Our team is here to help you with any questions you might have about our services.</p>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-primary">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

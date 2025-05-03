@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transaction Successful | Banking System{% endblock %}
+
+{% block styles %}
+<style>
+    .success-icon {
+        font-size: 80px;
+        color: #28a745;
+    }
+    
+    .transaction-details {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill success-icon"></i>
+                    </div>
+                    <h2 class="mb-3">Transaction Successful!</h2>
+                    <p class="text-muted mb-4">Your money has been transferred successfully.</p>
+                    
+                    <div class="transaction-details mb-4 text-start">
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">Transaction ID</div>
+                            <div class="col-6 text-end">{{ transaction.id }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">Date & Time</div>
+                            <div class="col-6 text-end">{{ transaction.timestamp|date:"F d, Y" }} at {{ transaction.timestamp|time:"h:i A" }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">Amount</div>
+                            <div class="col-6 text-end">${{ transaction.amount|floatformat:2 }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">Recipient</div>
+                            <div class="col-6 text-end">{{ transaction.recipient_name }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">Account Number</div>
+                            <div class="col-6 text-end">{{ transaction.recipient_account }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 text-muted">Description</div>
+                            <div class="col-6 text-end">{{ transaction.description }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary me-2">Back to Dashboard</a>
+                        <a href="{% url 'quick_transfer' %}" class="btn btn-outline-secondary">Make Another Transfer</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

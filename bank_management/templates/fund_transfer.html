@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Transfer UI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #6A0DAD; /* Grape color */
+        }
+        
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .header-banner {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .transfer-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .summary-box {
+            background: #f0f2ff;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .btn-transfer {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        .btn-transfer:hover {
+            background-color: #5a0b93;
+        }
+        .note-counter {
+            color: #6c757d;
+            font-size: 0.875rem;
+            text-align: right;
+            margin-top: 5px;
+        }
+        .note-hint {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+        .navbar-brand {
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            cursor: pointer; /* Add cursor pointer to indicate it's clickable */
+        }   
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10x">
+                <div class="header-banner">
+                    <a class="navbar-brand" href="{% url 'dashboard' %}">RJM BANK</a>
+                </div>
+                
+                <div class="transfer-box">
+                    <h3>Transfer Money</h3>
+                    <p>Enter the details below to complete your transfer</p>
+                    
+                    <div class="summary-box mb-3">
+                        <h5>Transfer Details</h5>
+                        <p>Please enter the recipient account information and transfer amount</p>
+                    </div>
+                    
+                    <form id="transferForm" method="POST" action="{% url 'fund_transfer' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Recipient Account Number</label>
+                            <input type="text" class="form-control" name="recipient_account" id="recipient_account" placeholder="Enter account number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Transfer Amount ($)</label>
+                            <input type="number" class="form-control" name="amount" id="amount" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">PIN Number</label>
+                            <input type="password" class="form-control" name="pin" id="pin" placeholder="Enter your 4-digit PIN" required maxlength="4" pattern="[0-9]{4}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Transfer Note</label>
+                            <textarea class="form-control" name="note" id="note" rows="3" maxlength="200" placeholder="Add a note for this transfer (optional)"></textarea>
+                            <div class="note-hint">Add a message for the recipient (e.g., rent payment, birthday gift)</div>
+                            <div class="note-counter"><span id="noteCharCount">0</span>/200 characters</div>
+                        </div>
+                    
+                        <div class="summary-box mb-3">
+                            <p><strong>From Account:</strong> Account #{{ user.account_number }}</p>
+                            <p><strong>Available Balance:</strong> ${{ user.account_balance }}
+                            <p><strong>Transfer Fee:</strong> $0.00</p>
+                        </div>
+                    
+                        <button type="button" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-transfer">Transfer Money</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#note').on('input', function() {
+                var charCount = $(this).val().length;
+                $('#noteCharCount').text(charCount);
+            });
+    
+            $('#transferForm').on('submit', function(e) {
+                // Get the recipient account number
+                const recipientAccount = $('#recipient_account').val();
+                // Get the user's own account number
+                const userAccount = '{{ user.account_number }}';
+                
+                // Check if user is trying to transfer to their own account
+                if (recipientAccount === userAccount) {
+                    e.preventDefault();
+                    alert('Error: You cannot transfer funds to your own account.');
+                    return false;
+                }
+                
+                e.preventDefault();
+                
+                const formData = $(this).serialize();
+                
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Transfer successful!');
+                            window.location.href = '/dashboard/';
+                        } else {
+                            alert(response.message || 'Transfer failed. Please try again.');
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

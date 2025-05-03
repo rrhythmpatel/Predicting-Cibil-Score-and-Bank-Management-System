@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CIBIL Score | Banking System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="text-primary mb-4">Your CIBIL Score</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="score-circle mx-auto mb-3" style="width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(
+                                {% if score >= 750 %}#28a745{% elif score >= 700 %}#5cb85c{% elif score >= 650 %}#ffc107{% elif score >= 600 %}#fd7e14{% else %}#dc3545{% endif %} {{ score_percentage }}%, 
+                                #e9ecef 0
+                            ); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,0,0,0.1);">
+                                <div style="width: 160px; height: 160px; border-radius: 50%; background-color: white; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                    <h1 class="mb-0 fw-bold">{{ score }}</h1>
+                                    <small class="text-muted">out of 900</small>
+                                </div>
+                            </div>
+                            <h4 class="mt-3">{{ score_category }}</h4>
+                            <p class="text-muted">{{ score_description }}</p>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <h4 class="mb-3">Score Breakdown</h4>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Payment History (35%)</span>
+                                    <span>{{ payment_history_score }}</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ payment_history_percentage }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Credit Utilization (30%)</span>
+                                    <span>{{ credit_utilization_score }}</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ credit_utilization_percentage }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Credit History Length (15%)</span>
+                                    <span>{{ credit_history_score }}</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ credit_history_percentage }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Credit Mix (20%)</span>
+                                    <span>{{ credit_mix_score }}</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ credit_mix_percentage }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h4 class="text-primary mb-3">Loan Eligibility</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan Type</th>
+                                    <th>Status</th>
+                                    <th>Interest Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Personal Loan</td>
+                                    <td>
+                                        {% if score >= 700 %}
+                                        <span class="badge bg-success">Eligible</span>
+                                        {% elif score >= 650 %}
+                                        <span class="badge bg-warning">Conditionally Eligible</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Not Eligible</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if score >= 750 %}
+                                        10.5% - 12.5%
+                                        {% elif score >= 700 %}
+                                        12.5% - 14.5%
+                                        {% elif score >= 650 %}
+                                        14.5% - 16.5%
+                                        {% else %}
+                                        16.5%+
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Home Loan</td>
+                                    <td>
+                                        {% if score >= 700 %}
+                                        <span class="badge bg-success">Eligible</span>
+                                        {% elif score >= 650 %}
+                                        <span class="badge bg-warning">Conditionally Eligible</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Not Eligible</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if score >= 750 %}
+                                        6.5% - 7.5%
+                                        {% elif score >= 700 %}
+                                        7.5% - 8.5%
+                                        {% elif score >= 650 %}
+                                        8.5% - 9.5%
+                                        {% else %}
+                                        9.5%+
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Car Loan</td>
+                                    <td>
+                                        {% if score >= 700 %}
+                                        <span class="badge bg-success">Eligible</span>
+                                        {% elif score >= 650 %}
+                                        <span class="badge bg-warning">Conditionally Eligible</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Not Eligible</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if score >= 750 %}
+                                        7.5% - 8.5%
+                                        {% elif score >= 700 %}
+                                        8.5% - 9.5%
+                                        {% elif score >= 650 %}
+                                        9.5% - 10.5%
+                                        {% else %}
+                                        10.5%+
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'loan_normal' %}" class="btn btn-primary">Apply for Loan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h4 class="text-primary mb-3">Tips to Improve Your Score</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-primary"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <strong>Pay your bills on time</strong>
+                                <p class="text-muted mb-0">Late payments can significantly impact your score.</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-primary"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <strong>Keep credit card balances low</strong>
+                                <p class="text-muted mb-0">High utilization rates can lower your score.</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-primary"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <strong>Don't close old credit accounts</strong>
+                                <p class="text-muted mb-0">Longer credit history improves your score.</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div class="me-3 text-primary"><i class="fas fa-check-circle"></i></div>
+                            <div>
+                                <strong>Apply for new credit only when needed</strong>
+                                <p class="text-muted mb-0">Multiple credit inquiries can lower your score.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="text-primary mb-3">Score History</h4>
+                    <canvas id="scoreHistoryChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate progress bars
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300);
+        });
+        
+        // Score history chart
+        const ctx = document.getElementById('scoreHistoryChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['6 Months Ago', '5 Months Ago', '4 Months Ago', '3 Months Ago', '2 Months Ago', '1 Month Ago', 'Current'],
+                datasets: [{
+                    label: 'CIBIL Score',
+                    data: [
+                        {{ score|default:700 }} - 30, 
+                        {{ score|default:700 }} - 25, 
+                        {{ score|default:700 }} - 20, 
+                        {{ score|default:700 }} - 15, 
+                        {{ score|default:700 }} - 10, 
+                        {{ score|default:700 }} - 5, 
+                        {{ score|default:700 }}
+                    ],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: Math.max(300, {{ score|default:700 }} - 50),
+                        max: Math.min(900, {{ score|default:700 }} + 20)
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Score: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Fix for conic gradient calculation
+        const scoreCircle = document.querySelector('.score-circle');
+        if (scoreCircle) {
+            const score = {{ score|default:700 }};
+            const maxScore = 900;
+            const scoreDegrees = (score / maxScore) * 360;
+            
+            const gradientColor = 
+                {% if score >= 750 %}'#28a745'{% elif score >= 700 %}'#5cb85c'{% elif score >= 650 %}'#ffc107'{% elif score >= 600 %}'#fd7e14'{% else %}'#dc3545'{% endif %};
+            
+            scoreCircle.style.background = `conic-gradient(${gradientColor} ${scoreDegrees}deg, #e9ecef 0)`;
+        }
+    });
+</script>
+{% endblock %}

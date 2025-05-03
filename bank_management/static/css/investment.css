@@ -1,0 +1,198 @@
+/* Investment Page Styles */
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.chart-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+/* Market status badge */
+.badge.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Investment cards */
+.investment-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.investment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Value changes */
+.text-success i, .text-danger i {
+    margin-right: 0.25rem;
+}
+
+/* Table styles */
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Button group styles */
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Placeholder animations */
+.placeholder-glow .placeholder {
+    animation: placeholder-glow 2s ease-in-out infinite;
+}
+
+@keyframes placeholder-glow {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Investment type badges */
+.badge-stock {
+    background-color: #007bff;
+}
+
+.badge-bond {
+    background-color: #6c757d;
+}
+
+.badge-mutual-fund {
+    background-color: #28a745;
+}
+
+.badge-etf {
+    background-color: #17a2b8;
+}
+
+.badge-real-estate {
+    background-color: #dc3545;
+}
+
+.badge-crypto {
+    background-color: #fd7e14;
+}
+
+.badge-cd {
+    background-color: #6f42c1;
+}
+
+.badge-other {
+    background-color: #20c997;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+    padding: 0.75rem 1.25rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fc;
+}
+
+.table td, .table th {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+/* Animation for cards */
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Custom colors for investment types */
+.badge-stock {
+    background-color: #4e73df;
+}
+
+.badge-mutual_fund {
+    background-color: #1cc88a;
+}
+
+.badge-fixed_deposit {
+    background-color: #36b9cc;
+}
+
+.badge-bond {
+    background-color: #f6c23e;
+}
+
+.badge-etf {
+    background-color: #e74a3b;
+}
+
+/* Modal styles */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+}
+
+.modal-header {
+    background-color: #4e73df;
+    color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+}

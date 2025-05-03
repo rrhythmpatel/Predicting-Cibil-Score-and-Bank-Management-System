@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --light-purple: #f5f3ff;
+            --grey-text: #6c757d;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f9f9ff;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: white;
+            height: 100vh;
+            width: 220px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            border-right: 1px solid #eee;
+            z-index: 1000;
+            padding-top: 10px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-brand .toggle-btn {
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .sidebar-menu {
+            padding: 0;
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            padding: 10px 15px;
+            color: var(--grey-text);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .info-card {
+            padding: 20px;
+            min-height: 140px;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-flex-direction: column;
+            -ms-flex-direction: column;
+            flex-direction: column;
+        }
+
+        .quick-action-card {
+            padding: 20px;
+            min-height: 120px;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-flex-direction: column;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -ms-text-align: center;
+            text-align: center;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--light-purple);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu .icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .sidebar-divider {
+            margin: 15px 0;
+            border-top: 1px solid #eee;
+            padding: 0 15px;
+        }
+
+        .account-label {
+            color: var(--grey-text);
+            font-size: 12px;
+            padding: 0 15px;
+            margin-bottom: 5px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+            background-color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1);
+        }
+
+        .info-card {
+            padding: 20px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quick-action-card {
+            padding: 20px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: var(--light-purple);
+            color: var(--primary-color);
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -webkit-justify-content: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .card-label {
+            color: var(--grey-text);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .card-value {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-subtext {
+            color: var(--grey-text);
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn-purple {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 15px;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-purple:hover {
+            background-color: #5649c0;
+            color: white;
+        }
+
+        .action-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .action-subtitle {
+            color: var(--grey-text);
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* Transaction History */
+        .transaction-history {
+            margin-top: 30px;
+        }
+
+        .nav-tabs {
+            border: none;
+            margin-bottom: 15px;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--grey-text);
+            padding: 5px 15px;
+            margin-right: 5px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--light-purple);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .transaction-table {
+            width: 100%;
+        }
+
+        .transaction-table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        .date-column {
+            width: 100px;
+        }
+
+        .transaction-date {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .transaction-date .month {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .transaction-date .year {
+            color: var(--grey-text);
+            font-size: 12px;
+        }
+
+        .transaction-description {
+            font-weight: 500;
+        }
+
+        .transaction-amount {
+            -ms-text-align: right;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .transaction-type {
+            -ms-text-align: right;
+            text-align: right;
+            color: var(--grey-text);
+            font-size: 14px;
+            width: 60px;
+        }
+
+        .quick-action-card {
+            padding: 20px;
+            min-height: 120px;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-flex-direction: column;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -ms-text-align: center;
+            text-align: center;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--light-purple);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar-menu .icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .sidebar-divider {
+            margin: 15px 0;
+            border-top: 1px solid #eee;
+            padding: 0 15px;
+        }
+
+        .account-label {
+            color: var(--grey-text);
+            font-size: 12px;
+            padding: 0 15px;
+            margin-bottom: 5px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+            background-color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1);
+        }
+
+        .info-card {
+            padding: 20px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quick-action-card {
+            padding: 20px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: var(--light-purple);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .card-label {
+            color: var(--grey-text);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .card-value {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-subtext {
+            color: var(--grey-text);
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn-purple {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 15px;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-purple:hover {
+            background-color: #5649c0;
+            color: white;
+        }
+
+        .action-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .action-subtitle {
+            color: var(--grey-text);
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        /* Transaction History */
+        .transaction-history {
+            margin-top: 30px;
+        }
+
+        .nav-tabs {
+            border: none;
+            margin-bottom: 15px;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--grey-text);
+            padding: 5px 15px;
+            margin-right: 5px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--light-purple);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .transaction-table {
+            width: 100%;
+        }
+
+        .transaction-table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        .date-column {
+            width: 100px;
+        }
+
+        .transaction-date {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .transaction-date .month {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .transaction-date .year {
+            color: var(--grey-text);
+            font-size: 12px;
+        }
+
+        .transaction-description {
+            font-weight: 500;
+        }
+
+        .transaction-amount {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .transaction-type {
+            text-align: right;
+            color: var(--grey-text);
+            font-size: 14px;
+            width: 60px;
+        }
+
+        .view-all-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            padding: 8px 20px;
+            margin: 15px auto;
+            display: block;
+            max-width: 200px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .view-all-btn:hover {
+            background-color: #5649c0;
+            color: white;
+        }
+
+        /* Footer Cards */
+        .footer-cards {
+            margin-top: 30px;
+        }
+
+        .footer-card {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 180px;
+            }
+            .main-content {
+                margin-left: 180px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+                overflow: hidden;
+            }
+            .sidebar-brand span, .sidebar-menu span, .account-label {
+                display: none;
+            }
+            .sidebar-menu a {
+                justify-content: center;
+                padding: 15px 5px;
+            }
+            .sidebar-menu .icon {
+                margin-right: 0;
+                font-size: 20px;
+            }
+            .main-content {
+                margin-left: 60px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            .sidebar-menu {
+                display: flex;
+                justify-content: space-around;
+            }
+            .sidebar-menu li {
+                margin-bottom: 0;
+                flex: 1;
+            }
+            .sidebar-brand, .sidebar-divider, .account-items {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .date-column {
+                width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <span>RJM Bank</span>
+            <div class="toggle-btn">
+                <i class="bi bi-plus"></i>
+            </div>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="#" class="active">
+                    <i class="bi bi-grid icon"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'fund_transfer' %}" onclick="window.location.href='{% url 'fund_transfer' %}'; return false;">
+                    <i class="bi bi-arrow-left-right icon"></i>
+                    <span>Fund Transfer</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'loan_normal' %}" onclick="window.location.href='{% url 'loan_normal' %}'; return false;">
+                    <i class="bi bi-cash icon"></i>
+                    <span>Loans</span>
+                </a>
+            </li>
+           
+            <li>
+                <a href="{% url 'investment_page' %}" onclick="window.location.href='{% url 'investment_page' %}'; return false;">
+                    
+                    <i class="bi bi-graph-up-arrow icon"></i>
+                    <span>Investment</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'cheque_deposit' %}" onclick="window.location.href='{% url 'cheque_deposit' %}'; return false;">
+                    <i class="bi bi-bank icon"></i>
+                    <span>Cheque Deposit</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-divider"></div>
+        <div class="account-label">ACCOUNT</div>
+        
+        <ul class="sidebar-menu account-items">
+            <li>
+                <a href="{% url 'settings' %}" onclick="window.location.href='{% url 'settings' %}'; return false;">
+
+                    <i class="bi bi-gear icon"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+            <li>
+                    <a href="#" onclick="window.location.href='{% url 'homepage' %}'; return false;">                    <i class="bi bi-box-arrow-right icon"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <h4 class="section-title">Account Overview</h4>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header bg-info text-white">
+                    <strong class="me-auto">New Notification</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Info Cards -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="info-card">
+                        <div class="card-icon">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <div class="card-label">CURRENT BALANCE</div>
+                        <div class="card-value">${{ user_account.account_balance }}</div>
+                        <div class="card-subtext">Account Number: {{ user_account.account_number }}</div>
+                        <a href="{% url 'fund_transfer' %}" class="btn btn-purple">Transfer</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="info-card">
+                        <div class="card-icon">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        
+                        <div class="card-label">CIBIL SCORE</div>
+                        <div class="card-value">{{ cibil_score }}</div>
+                        <div class="card-subtext">{{ score_category }}</div>
+                        <a href="{% url 'cibil_score' %}" class="btn btn-purple">View Details</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="info-card">
+                        <div class="card-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div class="card-label">ACCOUNT STATUS</div>
+                        <div class="card-value">Active</div>
+                        <div class="card-subtext">Last verified: Today</div>
+                        <a href="{% url 'account_management' %}" class="btn btn-purple">Manage</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <h5 class="section-title">Quick Actions</h5>
+        <div class="row">
+            <div class="col-md-6 mb-6">
+                <div class="card">
+                    <div class="quick-action-card">
+                        <div class="card-icon">
+                            <i class="bi bi-arrow-left-right"></i>
+                        </div>
+                        <div class="action-title">Quick Transfer</div>
+                        <div class="action-subtitle">Send money to your contacts</div>
+                        
+                        <a href="{% url 'quick_transfer' %}" class="btn btn-purple">Transfer Now</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-6">
+                <div class="card">
+                    <div class="quick-action-card">
+                        <div class="card-icon">
+                            <i class="bi bi-file-text"></i>
+                        </div>
+                        <div class="action-title">Deposit Cheque</div>
+                        <div class="action-subtitle">Scan and deposit cheques</div>
+                        <a href="{% url 'cheque_deposit' %}" class="btn btn-purple">Deposit</a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Transaction History -->
+        <div class="transaction-history">
+            <h5 class="section-title">Transaction History</h5>
+            
+            <ul class="nav nav-tabs" id="transactionTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link " id="credit-tab" data-bs-toggle="tab" data-bs-target="#credit" type="button" role="tab">Credit</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="debit-tab" data-bs-toggle="tab" data-bs-target="#debit" type="button" role="tab">Debit</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">Pending</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="transactionTabContent">
+                <div class="tab-pane fade show active" id="all" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <table class="transaction-table">
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    <tr>
+                                        <td class="date-column">
+                                            <div class="transaction-date">
+                                                <div class="month">{{ transaction.date }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="transaction-description">
+                                            {% if transaction.description == "Transfer from None" %}
+                                                Loan Disburstment from rrhythmpatel
+                                            {% else %}
+                                                {{ transaction.description }}
+                                            {% endif %}
+                                        </td>
+                                                                                <td class="transaction-amount">${{ transaction.amount }}</td>
+                                        <td class="transaction-type">{{ transaction.type }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td class="date-column">
+                                            <div class="transaction-date">
+                                                <div class="month">May 4, 2023</div>
+                                            </div>
+                                        </td>
+                                        <td class="transaction-description">Salary Deposit</td>
+                                        <td class="transaction-amount">$3,450.00</td>
+                                        <td class="transaction-type">Credit</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="date-column">
+                                            <div class="transaction-date">
+                                                <div class="month">May 2, 2023</div>
+                                            </div>
+                                        </td>
+                                        <td class="transaction-description">Electricity Bill</td>
+                                        <td class="transaction-amount">$124.50</td>
+                                        <td class="transaction-type">Debit</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="date-column">
+                                            <div class="transaction-date">
+                                                <div class="month">May 1, 2023</div>
+                                            </div>
+                                        </td>
+                                        <td class="transaction-description">Grocery Store</td>
+                                        <td class="transaction-amount">$87.25</td>
+                                        <td class="transaction-type">Debit</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="date-column">
+                                            <div class="transaction-date">
+                                                <div class="month">May 5, 2023</div>
+                                            </div>
+                                        </td>
+                                        <td class="transaction-description">Interest Credit</td>
+                                        <td class="transaction-amount">$12.75</td>
+                                        <td class="transaction-type">Credit</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="view-all-btn">View All Transactions</a>
+                </div>
+                
+                <div class="tab-pane fade" id="credit" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <table class="transaction-table">
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    {% if transaction.type == 'credit' %}
+                                    <tr>
+                                        <td class="date-column">
+                                            <div class="transaction-date">
+                                                <div class="month">{{ transaction.date }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="transaction-description">
+                                            {% if transaction.description == "Transfer from None" %}
+                                                Loan Disburstment from rrhythmpatel
+                                            {% else %}
+                                                {{ transaction.description }}
+                                            {% endif %}
+                                        </td>
+                                                                                <td class="transaction-amount">${{ transaction.amount }}</td>
+                                        <td class="transaction-type">{{ transaction.type }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="debit" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <table class="transaction-table">
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    {% if transaction.type == 'debit' %}
+                                    <tr>
+                                        <td class="date-column">
+                                            <div class="transaction-date">
+                                                <div class="month">{{ transaction.date }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="transaction-description">
+                                            {% if transaction.description == "Transfer from None" %}
+                                                Loan Disburstment from rrhythmpatel
+                                            {% else %}
+                                                {{ transaction.description }}
+                                            {% endif %}
+                                        </td>
+                                                                                <td class="transaction-amount">${{ transaction.amount }}</td>
+                                        <td class="transaction-type">{{ transaction.type }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="pending" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body text-center p-4">
+                            <p>No pending transactions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Cards -->
+        <div class="footer-cards">
+            <div class="row">
+            <!-- Modified Statistics Section -->
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-graph-up me-2"></i>
+                                <h5 class="mb-0">Spending Overview</h5>
+                            </div>
+                            <p class="text-muted flex-grow-1">Monthly expense breakdown</p>
+                            <button class="btn btn-purple w-100" onclick="window.location.href='{% url 'spending_overview' %}'">View Details</button>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-bell me-2"></i>
+                                <h5 class="mb-0">Alerts</h5>
+                            </div>
+                            <p class="action-subtitle text-muted flex-grow-1"><span id="notification-count">0</span> new notifications</p>
+                            <button class="btn btn-purple w-100" data-bs-toggle="modal" data-bs-target="#alertsModal">View All</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- ... rest of the code ... -->
+
+                <div class="modal fade" id="alertsModal" tabindex="-1" aria-labelledby="alertsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="alertsModalLabel">Notifications</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="notifications-list">
+                                    <!-- Notifications will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>         
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Add hover effects for cards
+            $('.card').hover(
+                function() {
+                    $(this).addClass('shadow-sm');
+                },
+                function() {
+                    $(this).removeClass('shadow-sm');
+                }
+            );
+            
+            // Make the menu items clickable
+            $('.sidebar-menu a').click(function(e) {
+                e.preventDefault();
+                $('.sidebar-menu a').removeClass('active');
+                $(this).addClass('active');
+            });
+            
+            // Add responsive sidebar toggle for mobile
+            $('.toggle-btn').click(function() {
+                $('.sidebar').toggleClass('collapsed');
+            });
+            
+            // Make table rows clickable
+            $('.transaction-table tr').click(function() {
+                // Add functionality to show transaction details
+                console.log('Transaction clicked');
+            });
+            
+            // Responsive adjustments
+            function checkWidth() {
+                if ($(window).width() < 768) {
+                    $('.sidebar').addClass('mobile-view');
+                } else {
+                    $('.sidebar').removeClass('mobile-view');
+                }
+            }
+            
+            // Run on load and resize
+            checkWidth();
+            $(window).resize(checkWidth);
+        });
+    </script>
+<!-- Add this right before the closing </body> tag -->
+<script>
+    function checkNotifications() {
+    $.ajax({
+        url: '/get_notifications/',
+        method: 'GET',
+        success: function(response) {
+            if (response.notifications && response.notifications.length > 0) {
+                response.notifications.forEach(notification => {
+                    notification.message = notification.message.replace('₹', '$');  // Fix here
+                    $('.main-content').prepend(`
+                        <div class="alert alert-info">
+                            ${notification.message}
+                        </div>
+                    `);
+                });
+            }
+        }
+    });
+}
+
+
+
+    // Update the document ready function
+    $(document).ready(function() {
+        // Add hover effects for cards
+        $('.card').hover(
+            function() {
+                $(this).addClass('shadow-sm');
+            },
+            function() {
+                $(this).removeClass('shadow-sm');
+            }
+        );
+        
+        // Make the menu items clickable
+        $('.sidebar-menu a').click(function(e) {
+            e.preventDefault();
+            $('.sidebar-menu a').removeClass('active');
+            $(this).addClass('active');
+        });
+        
+        // Add responsive sidebar toggle for mobile
+        $('.toggle-btn').click(function() {
+            $('.sidebar').toggleClass('collapsed');
+        });
+        
+        // Make table rows clickable
+        $('.transaction-table tr').click(function() {
+            // Add functionality to show transaction details
+            console.log('Transaction clicked');
+        });
+        
+        // Responsive adjustments
+        function checkWidth() {
+            if ($(window).width() < 768) {
+                $('.sidebar').addClass('mobile-view');
+            } else {
+                $('.sidebar').removeClass('mobile-view');
+            }
+        }
+        
+        // Run on load and resize
+        checkWidth();
+        $(window).resize(checkWidth);
+    });
+</script>
+<!-- Add this right before the closing </body> tag -->
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function checkNotifications() {
+        $.ajax({
+            url: '/get_notifications/',
+            method: 'GET',
+            success: function(response) {
+                console.log('Notifications response:', response); // Debug log
+                if (response.notifications && response.notifications.length > 0) {
+                    response.notifications.forEach(notification => {
+                        if (!notification.is_read) {
+                            // Show Bootstrap alert
+                            const alertHtml = `
+                                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                    ${notification.message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            `;
+                            $('.main-content').prepend(alertHtml);
+                            markNotificationAsRead(notification.id);
+                        }
+                    });
+                }
+            },
+            error: function(error) {
+                console.error('Error fetching notifications:', error);
+            }
+        });
+    }
+
+    // Check notifications every 10 seconds
+    $(document).ready(function() {
+        checkNotifications();
+        setInterval(checkNotifications, 10000);
+    });
+</script>
+<script>
+    function checkNotifications() {
+        $.ajax({
+            url: '/get_notifications/',
+            method: 'GET',
+            success: function(response) {
+                if (response.notifications && response.notifications.length > 0) {
+                    // Count unread notifications
+                    const unreadCount = response.notifications.filter(n => !n.is_read).length;
+                    $('#notification-count').text(unreadCount);
+                    
+                    // Update notifications list in modal
+                    const notificationsList = $('#notifications-list');
+                    notificationsList.empty();
+                    
+                    response.notifications.forEach(notification => {
+                        // Add to modal
+                        const notificationHtml = `
+                            <div class="alert ${notification.is_read ? 'alert-secondary' : 'alert-info'} mb-2">
+                                ${notification.message.replace(/\n/g, '<br>')}
+                                <div class="small text-muted mt-1">${notification.created_at || 'Just now'}</div>
+                            </div>
+                        `;
+                        notificationsList.append(notificationHtml);
+
+                        // Show toast for unread notifications
+                        if (!notification.is_read) {
+                            $('.toast-body').html(notification.message.replace(/\n/g, '<br>'));
+                            const toast = new bootstrap.Toast(document.getElementById('notificationToast'));
+                            toast.show();
+                        }
+                    });
+                } else {
+                    $('#notification-count').text('0');
+                    $('#notifications-list').html('<p class="text-center">No notifications</p>');
+                }
+            },
+            error: function(error) {
+                console.error('Error fetching notifications:', error);
+            }
+        });
+    }
+
+    // Mark notifications as read when opening modal
+    $('#alertsModal').on('show.bs.modal', function () {
+        $.ajax({
+            url: '/mark_all_notifications_read/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function() {
+                checkNotifications();
+            }
+        });
+    });
+
+    // Check notifications every 5 seconds
+    $(document).ready(function() {
+        checkNotifications();
+        setInterval(checkNotifications, 5000);
+    });
+</script>
+
+<!-- Add this script at the end of your dashboard.html file, before the closing </body> tag -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the "View Details" button for Spending Overview
+        const viewDetailsBtn = document.querySelector('.spending-overview-section .view-details-btn');
+        
+        if (viewDetailsBtn) {
+            viewDetailsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Redirect to the spending overview page
+                window.location.href = '/spending-overview/';
+            });
+        }
+    });
+</script>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheque Status Tracking | RJM Bank</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: #f9f8ff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .card-custom {
+            background: #f7f6fd;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        .card-custom:hover {
+            background: #ecebfa;
+            border-color: #d5d3f5;
+        }
+
+        .timeline {
+            border-left: 2px solid #6a4dfc;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            width: 18px;
+            height: 18px;
+            background: #6a4dfc;
+            border-radius: 50%;
+            top: 0;
+        }
+
+        .timeline-step:not(:last-child) {
+            margin-bottom: 20px;
+        }
+
+        .status {
+            font-size: 0.85rem;
+            color: #ff9800;
+        }
+
+        .btn-primary {
+            background-color: #6a4dfc;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #563bd9;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #ecebfa;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #6a4dfc;
+        }
+
+        .info-table td {
+            padding: 8px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4">
+        <a class="navbar-brand fw-bold" href="#">RJM Bank</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-3">
+                <li class="nav-item"><a class="nav-link active" href="#">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Deposits</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Accounts</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
+            </ul>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-primary">Help</button>
+            <button class="btn btn-primary btn-sm">Deposit Cheque</button>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">Cheque Deposits</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Track Status</li>
+            </ol>
+        </nav>
+
+        <!-- Search -->
+        <h4>Cheque Status Tracking</h4>
+        <p>Search by Cheque Number</p>
+        <div class="input-group mb-4">
+            <input type="text" class="form-control" placeholder="Enter cheque number (e.g., CH-2023-001)">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+        </div>
+
+        <!-- Cheque Details Card -->
+        <div class="card-custom mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="status">Processing</span>
+                    <h5>CH-2023-001</h5>
+                    <p class="mb-0">Amount: $1,250.00 | Deposit Date: Oct 15, 2023</p>
+                </div>
+                <i class="bi bi-receipt fs-1"></i>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <h5>Status Timeline</h5>
+        <div class="timeline mb-4">
+            <div class="timeline-step">
+                <h6>Cheque Received</h6>
+                <p class="text-muted small">Oct 15, 2023 - 09:15 AM</p>
+            </div>
+            <div class="timeline-step">
+                <h6>Verification Started</h6>
+                <p class="text-muted small">Oct 15, 2023 - 11:30 AM</p>
+            </div>
+            <div class="timeline-step">
+                <h6>Bank Processing</h6>
+                <p class="text-muted small">Oct 16, 2023 - In Progress</p>
+            </div>
+            <div class="timeline-step">
+                <h6>Funds Clearance</h6>
+                <p class="text-muted small">Estimated: Oct 18, 2023</p>
+            </div>
+        </div>
+
+        <!-- Additional Info -->
+        <h5>Additional Information</h5>
+        <table class="table info-table mb-4">
+            <tbody>
+                <tr>
+                    <td><strong>Issuing Bank</strong></td>
+                    <td>First National Bank</td>
+                </tr>
+                <tr>
+                    <td><strong>Branch</strong></td>
+                    <td>Downtown Financial District</td>
+                </tr>
+                <tr>
+                    <td><strong>Payee</strong></td>
+                    <td>John Smith</td>
+                </tr>
+                <tr>
+                    <td><strong>Deposit Account</strong></td>
+                    <td>Savings - ••••4567</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Cheque Images -->
+        <h5>Cheque Images</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card-custom text-center">
+                    <h6>Front Side</h6>
+                    <button class="btn btn-primary btn-sm mt-2">View</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-custom text-center">
+                    <h6>Back Side</h6>
+                    <button class="btn btn-primary btn-sm mt-2">View</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary">Download Receipt</button>
+            <button class="btn btn-outline-secondary">Report Issue</button>
+            <button class="btn btn-outline-secondary">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

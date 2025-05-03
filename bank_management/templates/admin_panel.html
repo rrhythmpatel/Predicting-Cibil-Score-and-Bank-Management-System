@@ -1,0 +1,2165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>RJM Bank Admin Panel</title>
+    <!-- Move jQuery and Chart.js here, before Bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .sidebar-item {
+            padding: 10px 15px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+        .sidebar-item:hover {
+            background-color: #f8f9fa;
+            color: #5a6268;
+            cursor: pointer;
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .card-purple-btn {
+            background-color: #6a4cff;
+            color: white;
+            border: none;
+        }
+        .card-purple-btn:hover {
+            background-color: #5a3cef;
+        }
+        .recent-activity-row:hover {
+            background-color: #f8f9fa;
+        }
+        /* Replace text-align: right with float: right for IE compatibility */
+        .text-right {
+            float: right;
+        }
+        
+        /* Add IE-specific fixes */
+        @media (forced-colors: active) {
+        .dashboard-card {
+            forced-color-adjust: none;
+            display: block;
+        }
+        .sidebar {
+            forced-color-adjust: none;
+            float: left;
+        }
+    }
+        
+        /* Fix IE compatibility issues */
+        .text-end {
+            text-align: end;
+            float: right;
+        }
+        
+        @supports (-ms-ime-align: auto) {
+            .dashboard-card {
+                display: block;
+            }
+            .sidebar {
+                float: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+    <div class="container-fluid">
+        <div class="row">
+           
+
+            <!-- Main Content -->
+            <div class="col-md-12 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Admin Panel</h2>
+                    <a href="{% url 'homepage' %}" class="btn btn-outline-danger">
+                        <i class="bi bi-box-arrow-right me-1"></i>Logout
+                    </a>
+                </div>
+                
+
+            
+
+                
+                <!-- Dashboard Cards -->
+                <!-- Replace the cards section with this -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-3 text-center">
+                            <h6 class="text-muted">Total Clients</h6>
+                            <h4>{{ total_clients|default:"0" }}</h4>
+                            <button class="btn card-purple-btn w-100 mt-2">View Details</button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-3 text-center">
+                            <h6 class="text-muted">Active Accounts</h6>
+                            <h4>{{ active_accounts|default:"0" }}</h4>
+                            <button class="btn card-purple-btn w-100 mt-2">View Details</button>
+                        </div>
+                    </div>
+                    <!-- Update the Pending Accounts card to link to the existing pending users section -->
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-3 text-center">
+                            <h6 class="text-muted">Pending Accounts</h6>
+                            <h4>{{ pending_accounts|default:"0" }}</h4>
+                            <button class="btn card-purple-btn w-100 mt-2" id="viewPendingAccountsBtn">View Details</button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-3 text-center">
+                            <h6 class="text-muted">24hr Transactions</h6>
+                            <h4>${{ transactions_24h|default:"0" }}</h4>
+                            <p class="text-muted">{{ transactions_count|default:"0" }} transactions</p>
+                            <button class="btn card-purple-btn w-100 mt-2" id="viewRecentActivityBtn">View Details</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Statistics -->
+                <!-- Replace the Transaction Statistics section -->
+                <div class="dashboard-card p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>Transaction Volume</h5>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2" onclick="downloadTransactionReport()">Download Report</button>
+                            <select class="form-select d-inline-block w-auto" id="timeRangeFilter">
+                                <option value="7">Last 7 days</option>
+                                <option value="30">Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-3" style="height: 400px;">
+                        <canvas id="transactionChart"></canvas>
+                    </div>
+                </div>
+                <!-- Add this in your script section -->
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                let transactionChart;
+                <!-- Replace the existing chart initialization -->
+                
+                function initializeTransactionChart() {
+                    const ctx = document.getElementById('transactionChart').getContext('2d');
+                    const gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradientFill.addColorStop(0, 'rgba(106, 76, 255, 0.3)');
+                    gradientFill.addColorStop(1, 'rgba(106, 76, 255, 0.0)');
+                    
+                    transactionChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: [],
+                            datasets: [{
+                                label: 'Transaction Volume ($)',
+                                data: [],
+                                backgroundColor: gradientFill,
+                                borderColor: 'rgba(106, 76, 255, 1)',
+                                borderWidth: 2,
+                                yAxisID: 'y',
+                                fill: true
+                            }, {
+                                label: 'Number of Transactions',
+                                data: [],
+                                type: 'line',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                fill: false,
+                                yAxisID: 'y1'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                intersect: false,
+                                mode: 'index'
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    padding: 12,
+                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    titleColor: '#000',
+                                    bodyColor: '#000',
+                                    borderColor: '#ddd',
+                                    borderWidth: 1,
+                                    displayColors: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            if (context.datasetIndex === 0) {
+                                                return `Volume: ${context.parsed.y.toLocaleString()}`;
+                                            }
+                                            return `Transactions: ${context.parsed.y}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: {
+                                        display: true,
+                                        text: 'Transaction Volume ($)',
+                                        color: 'rgba(106, 76, 255, 1)'
+                                    },
+                                    grid: {
+                                        borderDash: [2, 4]
+                                    }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Transactions',
+                                        color: 'rgba(255, 99, 132, 1)'
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                function downloadTransactionReport() {
+                    const days = document.getElementById('timeRangeFilter').value;
+                    const downloadUrl = `/download_transaction_report/?days=${days}`;
+                    
+                    // Show loading indicator
+                    const downloadButton = document.querySelector('[onclick="downloadTransactionReport()"]');
+                    const originalText = downloadButton.innerHTML;
+                    downloadButton.innerHTML = 'Downloading...';
+                    downloadButton.disabled = true;
+    
+                    fetch(downloadUrl)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Download failed');
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            // Create download link
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `transaction_report_${new Date().toISOString().slice(0,10)}.csv`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            a.remove();
+                        })
+                        .catch(error => {
+                            console.error('Download error:', error);
+                            alert('Error downloading report. Please try again.');
+                        })
+                        .finally(() => {
+                            // Reset button state
+                            downloadButton.innerHTML = originalText;
+                            downloadButton.disabled = false;
+                        });
+                }
+                function updateTransactionChart() {
+                    const days = document.getElementById('timeRangeFilter').value;
+                    fetch(`/get_transaction_volume/?days=${days}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (transactionChart && !data.error) {
+                                transactionChart.data.labels = data.labels;
+                                transactionChart.data.datasets[0].data = data.amounts;
+                                transactionChart.data.datasets[1].data = data.counts;
+                                transactionChart.update();
+                            }
+                        })
+                        .catch(error => console.error('Error fetching transaction data:', error));
+                }
+                </script>
+                <!-- Recent Client Activity -->
+                <!-- Replace the existing Recent Client Activity section with this -->
+                <div class="dashboard-card p-3" id="recentClientActivitySection">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Recent Client Activity</h5>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2" onclick="refreshActivities()">Refresh</button>
+                            <button class="btn btn-outline-secondary" onclick="exportActivities()">Export Data</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="activityTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Client Name</th>
+                                    <th>Activity Type</th>
+                                    <th>Details</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityTableBody">
+                                <!-- Activities will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Add this JavaScript right before the closing </body> tag -->
+                <script>
+                function refreshActivities() {
+                    $.ajax({
+                        url: '/get_recent_activities/',
+                        method: 'GET',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        success: function(response) {
+                            const tbody = $('#activityTableBody');
+                            tbody.empty();
+                            
+                            if (response.activities && response.activities.length > 0) {
+                                response.activities.forEach(activity => {
+                                    const row = `
+                                        <tr class="recent-activity-row">
+                                            <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                                            <td>${activity.user}</td>
+                                            <td>${activity.type}</td>
+                                            <td>${activity.action}</td>
+                                            <td>
+                                                <span class="badge ${activity.type === 'Transaction' ? 'bg-success' : 'bg-primary'}">
+                                                    ${activity.type === 'Transaction' ? 'Completed' : 'Processed'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `;
+                                    tbody.append(row);
+                                });
+                            } else {
+                                tbody.append('<tr><td colspan="5" class="text-center">No recent activities</td></tr>');
+                            }
+                        },
+                        error: function(error) {
+                            console.error('Error fetching activities:', error);
+                            $('#activityTableBody').html('<tr><td colspan="5" class="text-center text-danger">Error loading activities</td></tr>');
+                        }
+                    });
+                }
+                
+                // Initial load and auto-refresh
+                $(document).ready(function() {
+                    refreshActivities();
+                    setInterval(refreshActivities, 10000); // Refresh every 10 seconds
+                });
+                
+                function exportActivities() {
+                    const rows = [['Time', 'Client Name', 'Activity Type', 'Details', 'Status']];
+                    $('#activityTable tr').each(function() {
+                        const row = [];
+                        $(this).find('td').each(function() {
+                            row.push($(this).text().trim());
+                        });
+                        if (row.length > 0) {
+                            rows.push(row);
+                        }
+                    });
+                    
+                    let csvContent = "data:text/csv;charset=utf-8,";
+                    rows.forEach(row => {
+                        csvContent += row.join(',') + '\r\n';
+                    });
+                    
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', encodedUri);
+                    link.setAttribute('download', 'recent_activities.csv');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+                </script>
+                <!-- Loan Approval Section -->
+                <div class="dashboard-card p-3 mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Loan Applications</h5>
+                        <div>
+                            <button class="btn btn-outline-secondary" onclick="exportLoanData()">Export Loan Data</button>
+                        </div>
+                    </div>
+                    <!-- Update the table headers -->
+                    <!-- Add this section for loan applications -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Loan Applications</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table" id="loanApplicationsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Client Name</th>
+                                        <th>Loan Amount</th>
+                                        <th>Loan Type</th>
+                                        <th>Purpose</th>
+                                        <th>Employment Status</th>
+                                        <th>Status</th>
+                                        <th>Applied Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Add this to your existing JavaScript -->
+                    <script>
+                    $(document).ready(function() {
+                        // Initial load of loan applications
+                        loadLoanApplications();
+                        
+                        // Refresh dashboard data and loan applications every 30 seconds
+                        setInterval(function() {
+                            updateDashboardData();
+                            loadLoanApplications();
+                        }, 30000);
+                    });
+                    
+                    function loadLoanApplications() {
+    $.ajax({
+        url: '/get_loan_applications/',
+        method: 'GET',
+        success: function(data) {
+            if (data.loans) {
+                const tbody = $('#loanApplicationsTable tbody');
+                tbody.empty();
+                
+                if (data.loans.length > 0) {
+                    data.loans.forEach(loan => {
+                        const statusDisplay = {
+                            'PENDING': '<span class="badge bg-warning">Pending Review</span>',
+                            'APPROVED': '<span class="badge bg-success">Approved</span>',
+                            'REJECTED': '<span class="badge bg-danger">Rejected</span>'
+                        };
+                        
+                        const row = `
+                            <tr>
+                                <td>${loan.client_name}</td>
+                                <td>${loan.amount}</td>
+                                <td>${loan.loan_type}</td>
+                                <td>${loan.purpose}</td>
+                                <td>${loan.employment_status}</td>
+                                <td>${statusDisplay[loan.status.toUpperCase()] || '<span class="badge bg-secondary">Unknown</span>'}</td>
+                                <td>${loan.applied_date}</td>
+                                <td>
+                                    ${loan.status.toUpperCase() === 'PENDING' ? 
+                                    `<button class="btn btn-sm btn-primary" onclick="reviewLoan(${loan.id})">Review</button>` :
+                                    `<button class="btn btn-sm btn-info" onclick="viewLoanDetails(${loan.id})">View Details</button>`}
+                                </td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="8" class="text-center">No loan applications found</td></tr>');
+                }
+            }
+        },
+        error: function(error) {
+            console.error('Error loading loan applications:', error);
+        }
+    });
+}  
+                    
+                    </script>
+                </div>
+
+                <!-- Loan Review Modal -->
+                <div class="modal fade" id="loanReviewModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Review Loan Application</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="loan-details mb-3">
+                                    <!-- Loan details will be populated here -->
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="reviewNotes">Review Notes</label>
+                                    <textarea class="form-control" id="reviewNotes" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-danger" onclick="handleLoanDecision('reject')">Reject</button>
+                                <button type="button" class="btn btn-success" onclick="handleLoanDecision('approve')">Approve</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+     function updateDashboardData() {
+    $.ajax({
+        url: '/get_admin_stats/',
+        method: 'GET',
+        cache: false,  // Prevent browser caching
+        success: function(data) {
+            if (data.error) {
+                console.error('Server error:', data.error);
+                return;
+            }
+            
+            // Update the dashboard cards with the received data
+            $('.dashboard-card').each(function() {
+                const cardType = $(this).find('h6').text().trim().toLowerCase();
+                const valueElement = $(this).find('h4');
+                
+                switch(cardType) {
+                    case 'total clients':
+                        valueElement.text(data.total_clients || 0);
+                        break;
+                    case 'active accounts':
+                        valueElement.text(data.active_accounts || 0);
+                        break;
+                    case 'pending accounts':
+                        valueElement.text(data.pending_accounts || 0);
+                        break;
+                    case '24hr transactions':
+                        const amount = parseFloat(data.transactions_24h || 0).toFixed(2);
+                        valueElement.text('$' + amount);
+                        $(this).find('p').text((data.transactions_count || 0) + ' transactions');
+                        break;
+                }
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    });
+}
+
+// Call immediately and set up interval
+$(document).ready(function() {
+    updateDashboardData();
+    // Refresh every 30 seconds
+    setInterval(updateDashboardData, 30000);
+});
+
+    let loanApplicationsData = [];  // Store loan applications data
+    function loadLoanApplications() {
+    $.ajax({
+        url: '/get_loan_applications/',
+        method: 'GET',
+        success: function(data) {
+            if (data.loans) {
+                const tbody = $('#loanApplicationsTable tbody');
+                tbody.empty();
+                
+                if (data.loans.length > 0) {
+                    data.loans.forEach(loan => {
+                        const statusDisplay = {
+                            'PENDING': '<span class="badge bg-warning">Pending Review</span>',
+                            'APPROVED': '<span class="badge bg-success">Approved</span>',
+                            'REJECTED': '<span class="badge bg-danger">Rejected</span>'
+                        };
+                        
+                        const row = `
+                            <tr>
+                                <td>${loan.client_name}</td>
+                                <td>${loan.amount}</td>
+                                <td>${loan.loan_type}</td>
+                                <td>${loan.purpose}</td>
+                                <td>${loan.employment_status}</td>
+                                <td>${statusDisplay[loan.status.toUpperCase()] || '<span class="badge bg-secondary">Unknown</span>'}</td>
+                                <td>${loan.applied_date}</td>
+                                <td>
+                                    ${loan.status.toUpperCase() === 'PENDING' ? 
+                                    `<button class="btn btn-sm btn-primary" onclick="reviewLoan(${loan.id})">Review</button>` :
+                                    `<button class="btn btn-sm btn-info" onclick="viewLoanDetails(${loan.id})">View Details</button>`}
+                                </td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="8" class="text-center">No loan applications found</td></tr>');
+                }
+            }
+        },
+        error: function(error) {
+            console.error('Error loading loan applications:', error);
+        }
+    });
+}
+
+
+// Update getStatusBadgeClass function
+function getStatusBadgeClass(status) {
+    switch(status.toUpperCase()) {
+        case 'APPROVED': return 'success';
+        case 'REJECTED': return 'danger';
+        case 'PENDING': return 'warning';
+        default: return 'secondary';
+    }
+}
+
+// Update the getStatusBadgeClass function
+function getStatusBadgeClass(status) {
+    switch(status.toLowerCase()) {
+        case 'approved': return 'success';
+        case 'rejected': return 'danger';
+        case 'pending': return 'warning';
+        default: return 'secondary';
+    }
+}
+    function updateLoanApplicationsTable() {
+        const tbody = $('#loanApplicationsTable tbody');
+        tbody.empty();
+        
+        if (loanApplicationsData.length > 0) {
+            loanApplicationsData.forEach(loan => {
+                const row = `
+                    <tr>
+                        <td>${loan.client_name}</td>
+                        <td>$${loan.amount}</td>
+                        <td>${loan.loan_type}</td>
+                        <td>${loan.purpose}</td>
+                        <td>${loan.employment_status}</td>
+                        <td><span class="badge bg-${getStatusBadgeClass(loan.status)}">${loan.status}</span></td>
+                        <td>${loan.applied_date}</td>
+                        <td>
+                            ${loan.status === 'PENDING' ? 
+                            `<button class="btn btn-sm btn-primary" onclick="reviewLoan(${loan.id})">Review</button>` :
+                            `<button class="btn btn-sm btn-secondary" onclick="viewLoanDetails(${loan.id})">View</button>`}
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        } else {
+            tbody.append('<tr><td colspan="8" class="text-center">No loan applications found</td></tr>');
+        }
+    }
+    // Initialize when document is ready
+    $(document).ready(function() {
+        loadLoanApplications();
+        // Refresh data every 30 seconds
+        setInterval(loadLoanApplications, 30000);
+    });
+    function getStatusBadgeClass(status) {
+        switch(status) {
+            case 'APPROVED': return 'success';
+            case 'REJECTED': return 'danger';
+            case 'PENDING': return 'warning';
+            default: return 'secondary';
+        }
+    }
+    currentLoanId
+function reviewLoan(loanId) {
+    if (!loanId) {
+        alert('Error: Invalid loan ID');
+        return;
+    }
+
+    // Store the loan ID globally
+    window.currentLoanId = parseInt(loanId);
+    
+    $.ajax({
+        url: `/get_loan_details/${loanId}/`,
+        method: 'GET',
+        success: function(loanData){
+            
+            // First display basic loan details
+            const loanDetails = `
+                <p><strong>Client Name:</strong> ${loanData.client_name}</p>
+                <p><strong>Amount:</strong> ${loanData.amount}</p>
+                <p><strong>Loan Type:</strong> ${loanData.loan_type}</p>
+                <p><strong>Purpose:</strong> ${loanData.purpose}</p>
+                <p><strong>Monthly Income:</strong> ${loanData.monthly_income}</p>
+                <p><strong>Employment Status:</strong> ${loanData.employment_status}</p>
+            `;
+            
+            $('.loan-details').html(loanDetails);
+            
+            // Now fetch the CIBIL data - try both endpoints
+            const clientId = loanData.client_id || loanData.user_id || loanId;
+            
+            // First try the get_cibil_data endpoint (which seems to be working based on your code)
+            $.ajax({
+                url: `/get_cibil_data/${clientId}/`,
+                method: 'GET',
+                success: function(cibilData) {
+                    console.log("CIBIL data received:", cibilData);
+                    displayCibilData(cibilData);
+                },
+                error: function(error) {
+                    console.error('Error fetching CIBIL data from primary endpoint:', error);
+                    
+                    // Try the alternative endpoint as fallback
+                    $.ajax({
+                        url: `/api/cibil_score/${clientId}/`,
+                        method: 'GET',
+                        success: function(cibilData) {
+                            console.log("CIBIL data received from alternative endpoint:", cibilData);
+                            displayCibilData(cibilData);
+                        },
+                        error: function(secondError) {
+                            console.error('Error fetching CIBIL data from alternative endpoint:', secondError);
+                            // Use fallback to estimated data
+                            displayEstimatedCibilData(loanData);
+                        }
+                    });
+                }
+            });
+            
+            $('#loanReviewModal').modal('show');
+            window.currentLoanId = loanId;
+        },
+        error: function(error) {
+            console.error('Error fetching loan details:', error);
+            alert('Error loading loan details. Please try again.');
+        }
+    });
+}
+
+// Helper function to display CIBIL data
+function displayCibilData(cibilData) {
+    // Determine score category based on score
+    let scoreCategory = 'Very Poor';
+    if (cibilData.score >= 750) {
+        scoreCategory = 'Excellent';
+    } else if (cibilData.score >= 700) {
+        scoreCategory = 'Good';
+    } else if (cibilData.score >= 650) {
+        scoreCategory = 'Fair';
+    } else if (cibilData.score >= 600) {
+        scoreCategory = 'Poor';
+    }
+    
+    // Determine eligibility badge class
+    let eligibilityBadgeClass = 'bg-danger';
+    if (cibilData.eligibility === 'Eligible') {
+        eligibilityBadgeClass = 'bg-success';
+    } else if (cibilData.eligibility === 'Conditionally Eligible') {
+        eligibilityBadgeClass = 'bg-warning text-dark';
+    }
+    
+    const eligibilityInfo = `
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Eligibility Assessment</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>CIBIL Score:</strong> <span class="badge ${getCibilBadgeClass(scoreCategory)}">${cibilData.score} (${scoreCategory})</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Eligibility Status:</strong> <span class="badge ${eligibilityBadgeClass}">${cibilData.eligibility}</span></p>
+                    </div>
+                </div>
+                <p><strong>Recommended Interest Rate:</strong> ${cibilData.interest_rate}%</p>
+                <div class="alert alert-info mt-2">
+                    <small>
+                        <strong>Note:</strong> Eligibility is determined based on CIBIL score, income, and employment status.
+                        ${cibilData.eligibility !== 'Eligible' ? 'Consider additional verification or collateral for this application.' : ''}
+                    </small>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('.eligibility-status').html(eligibilityInfo);
+}
+
+// Helper function to display estimated CIBIL data when API fails
+function displayEstimatedCibilData(loanData) {
+    // Display error message and fallback to estimated data
+    const errorMessage = `
+        <div class="alert alert-danger">
+            <p><strong>Error:</strong> Could not fetch CIBIL data. Using estimated score.</p>
+        </div>
+    `;
+    
+    // Generate fallback data
+    const clientNameHash = hashString(loanData.client_name);
+    const cibilScore = 300 + (clientNameHash % 600);
+    
+    let eligibility = 'Not Eligible';
+    let eligibilityBadgeClass = 'bg-danger';
+    let recommendedRate = '16.5%+';
+    let scoreCategory = 'Very Poor';
+    
+    if (cibilScore >= 750) {
+        eligibility = 'Eligible';
+        eligibilityBadgeClass = 'bg-success';
+        recommendedRate = '10.5%';
+        scoreCategory = 'Excellent';
+    } else if (cibilScore >= 650) {
+        eligibility = 'Conditionally Eligible';
+        eligibilityBadgeClass = 'bg-warning text-dark';
+        recommendedRate = '13.5%';
+        scoreCategory = cibilScore >= 700 ? 'Good' : 'Fair';
+    } else if (cibilScore >= 600) {
+        scoreCategory = 'Poor';
+    }
+    
+    const eligibilityInfo = `
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Eligibility Assessment</h5>
+            </div>
+            <div class="card-body">
+                ${errorMessage}
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>CIBIL Score:</strong> <span class="badge ${getCibilBadgeClass(scoreCategory)}">${cibilScore} (${scoreCategory})</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Eligibility Status:</strong> <span class="badge ${eligibilityBadgeClass}">${eligibility}</span></p>
+                    </div>
+                </div>
+                <p><strong>Recommended Interest Rate:</strong> ${recommendedRate}</p>
+                <div class="alert alert-info mt-2">
+                    <small>
+                        <strong>Note:</strong> Eligibility is determined based on CIBIL score, income, and employment status.
+                        ${eligibility !== 'Eligible' ? 'Consider additional verification or collateral for this application.' : ''}
+                    </small>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('.eligibility-status').html(eligibilityInfo);
+}
+    
+       // Add this function to define hashString
+    function hashString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        return Math.abs(hash);
+    }
+    
+    // Helper function to determine CIBIL score badge class
+    function getCibilBadgeClass(scoreCategory) {
+        switch(scoreCategory) {
+            case 'Excellent': return 'bg-success';
+            case 'Good': return 'bg-info';
+            case 'Fair': return 'bg-warning text-dark';
+            case 'Poor': 
+            case 'Very Poor': 
+            default: return 'bg-danger';
+        }
+    }
+    
+    // Remove the duplicate getCibilBadgeClass function
+    
+    function handleLoanDecision(decision) {
+    const notes = $('#reviewNotes').val();
+    const loanId = window.currentLoanId;
+    
+    if (!loanId) {
+        alert('Error: Loan ID not found');
+        return;
+    }
+    
+    // Show loading state
+    const submitButton = decision === 'approve' ? 
+        $('.btn-success') : $('.btn-danger');
+    const originalText = submitButton.text();
+    submitButton.prop('disabled', true).text('Processing...');
+    
+    // Create the form data
+    const formData = new FormData();
+    formData.append('loan_id', loanId);
+    formData.append('decision', decision.toUpperCase());
+    formData.append('review_notes', notes);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    
+    // Process loan decision
+    $.ajax({
+        url: '/process_loan_decision/',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if(response.success) {
+                // Create notification separately to ensure delivery
+                $.ajax({
+                    url: '/create_loan_notification/',
+                    method: 'POST',
+                    data: JSON.stringify({
+                        loan_id: loanId,
+                        decision: decision.toUpperCase(),
+                        notes: notes
+                    }),
+                    contentType: 'application/json',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                $('#loanReviewModal').modal('hide');
+                alert(`Loan application ${decision}d successfully!`);
+                loadLoanApplications();
+            } else {
+                alert('Error: ' + (response.error || 'Unknown error occurred'));
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error details:', {
+                status: xhr.status,
+                error: error,
+                response: xhr.responseText
+            });
+            
+            let errorMessage = 'An error occurred while processing the loan decision.';
+            try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                errorMessage = errorResponse.error || errorMessage;
+            } catch (e) {
+                console.error('Error parsing error response:', e);
+            }
+            
+            alert(errorMessage);
+        },
+        complete: function() {
+            submitButton.prop('disabled', false).text(originalText);
+            $('#reviewNotes').val('');
+            window.currentLoanId = null;
+        }
+    });
+}
+
+            // ... rest of the function remains the same ...
+    // Add this to your document ready function
+    $(document).ready(function() {
+        // Initialize sidebar interactivity
+        $('.sidebar-item').on('click', function() {
+            $(this).addClass('active').siblings().removeClass('active');
+        });
+        
+        // Initial data load
+        updateDashboardData();
+        
+        // Refresh data every 30 seconds
+        setInterval(updateDashboardData, 30000);
+        // Refresh loan applications every minute
+        setInterval(loadLoanApplications, 60000);
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/api/transactions/')
+            .then(response => response.json())
+            .then(data => {
+                let labels = data.map(item => item.date);
+                let values = data.map(item => item.amount);
+    
+                let ctx = document.getElementById('transactionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Transaction Volume',
+                            data: values,
+                            borderColor: 'blue',
+                            fill: false
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    });
+    </script>
+    <!-- Add this near the top of your template if it's not already there -->
+    {% csrf_token %}
+    
+    <!-- Replace the problematic section with this code -->
+    <div class="card mt-4" id="pendingUserApprovalsSection">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Pending User Approvals</h5>
+            <span class="badge bg-primary">{{ pending_users|length }}</span>
+        </div>
+        <div class="card-body">
+            {% if pending_users %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Account Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pending_users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.first_name }} {{ user.last_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.account_number }}</td>
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="approveUser({{ user.id }}, 'approve')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="approveUser({{ user.id }}, 'reject')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No pending user approvals at this time.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No pending user approvals at this time.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+    function approveUser(userId, action) {
+        if (!confirm(`Are you sure you want to ${action} this user?`)) {
+            return;
+        }
+        
+        fetch('/approve_user/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `user_id=${userId}&action=${action}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Show success message
+                alert(`User ${action === 'approve' ? 'approved' : 'rejected'} successfully!`);
+                // Reload the page to update the list
+                location.reload();
+            } else {
+                alert(`Error: ${data.message || 'Unknown error occurred'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request.');
+        });
+    }
+    </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/api/transactions/')
+            .then(response => response.json())
+            .then(data => {
+                let labels = data.map(item => item.date);
+                let values = data.map(item => item.amount);
+    
+                let ctx = document.getElementById('transactionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Transaction Volume',
+                            data: values,
+                            borderColor: 'blue',
+                            fill: false
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    });
+    </script>    
+   
+    
+    <!-- Add this script to handle the View Details button click -->
+    <script>
+    $(document).ready(function() {
+    // Handle View Details button click for Pending Accounts
+    $('#viewPendingAccountsBtn').on('click', function() {
+    // Scroll to the pending users section
+    $('html, body').animate({
+    scrollTop: $('#pendingUserApprovalsSection').offset().top - 70
+    }, 500);
+    
+    // Highlight the section briefly
+    $('#pendingUserApprovalsSection').addClass('highlight-section');
+    setTimeout(function() {
+    $('#pendingUserApprovalsSection').removeClass('highlight-section');
+    }, 1500);
+    });
+    });
+    </script>
+
+
+    
+    <!-- Add this style for the highlight effect -->
+    <style>
+    .highlight-section {
+    background-color: rgba(106, 76, 255, 0.1);
+    transition: background-color 1.5s;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(106, 76, 255, 0.5);
+    }
+    </style>
+
+<script>
+    $(document).ready(function() {
+        // Handle View Details button click for Recent Client Activity
+        $('#viewRecentActivityBtn').on('click', function() {
+            // Scroll to the recent client activity section
+            $('html, body').animate({
+                scrollTop: $('#recentClientActivitySection').offset().top - 70
+            }, 500);
+            
+            // Highlight the section briefly
+            $('#recentClientActivitySection').addClass('highlight-section');
+            setTimeout(function() {
+                $('#recentClientActivitySection').removeClass('highlight-section');
+            }, 1500);
+        });
+    });
+</script>
+
+    <!-- Add this style for the highlight effect -->
+    <style>
+        .highlight-section {
+        background-color: rgba(106, 76, 255, 0.1);
+        transition: background-color 1.5s;
+        border-radius: 5px;
+        box-shadow: 0 0 15px rgba(106, 76, 255, 0.5);
+        }
+        </style>
+  
+
+    <script>
+    function approveUser(userId, action) {
+        if (!confirm(`Are you sure you want to ${action} this user?`)) {
+            return;
+        }
+        
+        fetch('/approve_user/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `user_id=${userId}&action=${action}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Show success message
+                alert(`User ${action === 'approve' ? 'approved' : 'rejected'} successfully!`);
+                // Reload the page to update the list
+                location.reload();
+            } else {
+                alert(`Error: ${data.message || 'Unknown error occurred'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your request.');
+        });
+    }
+    </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/api/transactions/')
+            .then(response => response.json())
+            .then(data => {
+                let labels = data.map(item => item.date);
+                let values = data.map(item => item.amount);
+    
+                let ctx = document.getElementById('transactionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Transaction Volume',
+                            data: values,
+                            borderColor: 'blue',
+                            fill: false
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    });
+    </script>   
+
+    <script>
+    <!-- Add this script to handle the View Details button click -->
+    function fetchCibilData(userId) {
+    $.ajax({
+        url: `/get_cibil_data/${userId}/`,  // Changed from api/cibil_score to get_cibil_data
+        method: 'GET',
+        success: function(cibilData) {
+            console.log("CIBIL Data received:", cibilData);
+
+            if (!cibilData.error) {
+                $('.eligibility-status').html(`
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">CIBIL Score & Loan Eligibility</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>CIBIL Score:</strong> <span class="badge bg-success">${cibilData.cibil_score || 'N/A'}</span></p>
+                            <p><strong>Eligibility Status:</strong> <span class="badge bg-info">${cibilData.eligibility || 'Pending'}</span></p>
+                            <p><strong>Recommended Interest Rate:</strong> ${cibilData.interest_rate || 'TBD'}%</p>
+                        </div>
+                    </div>
+                `);
+            } else {
+                displayEstimatedCibilData(cibilData);
+            }
+        },
+        error: function(error) {
+            console.error('Error fetching CIBIL data:', error);
+            displayEstimatedCibilData({});
+        }
+    });
+}
+
+
+    
+    // Call function when reviewing a loan application
+    function reviewLoan(loanId) {
+    if (!loanId) {
+        alert('Error: Invalid loan ID');
+        return;
+    }
+
+    window.currentLoanId = loanId; // Store the loan ID globally
+    
+    $.ajax({
+        url: `/get_loan_details/${loanId}/`,
+        method: 'GET',
+        success: function(loanData) {
+            console.log("Loan details received:", loanData);
+            
+            if (!loanData || loanData.error) {
+                alert('Error: Could not fetch loan details');
+                return;
+            }
+            
+            const loanDetails = `
+                <p><strong>Client Name:</strong> ${loanData.client_name || 'N/A'}</p>
+                <p><strong>Amount:</strong> ${loanData.amount || '0.00'}</p>
+                <p><strong>Loan Type:</strong> ${loanData.loan_type || 'N/A'}</p>
+                <p><strong>Purpose:</strong> ${loanData.purpose || 'N/A'}</p>
+                <p><strong>Monthly Income:</strong> ${loanData.monthly_income || '0.00'}</p>
+                <p><strong>Employment Status:</strong> ${loanData.employment_status || 'N/A'}</p>
+            `;
+            
+            $('.loan-details').html(loanDetails);
+            
+            // Fetch CIBIL data using the correct ID
+            const clientId = loanData.client_id || loanData.user_id;
+            if (clientId) {
+                fetchCibilData(clientId);
+            }
+            
+            $('#loanReviewModal').modal('show');
+        },
+        error: function(error) {
+            console.error('Error fetching loan details:', error);
+            alert('Error loading loan details. Please try again.');
+        }
+    });
+}
+
+function viewLoanDetails(loanId) {
+    $.ajax({
+        url: `/get_loan_details/${loanId}/`,
+        method: 'GET',
+        success: function(loanData) {
+            const loanDetails = `
+                <p><strong>Client Name:</strong> ${loanData.client_name || 'N/A'}</p>
+                <p><strong>Amount:</strong> ${loanData.amount || '0.00'}</p>
+                <p><strong>Loan Type:</strong> ${loanData.loan_type || 'Personal'}</p>
+                <p><strong>Purpose:</strong> ${loanData.purpose || 'N/A'}</p>
+                <p><strong>Monthly Income:</strong> ${loanData.monthly_income || '0.00'}</p>
+                <p><strong>Employment Status:</strong> ${loanData.employment_status || 'N/A'}</p>
+                <p><strong>Applied Date:</strong> ${loanData.applied_date || 'N/A'}</p>
+                ${loanData.review_notes ? `<p><strong>Review Notes:</strong> ${loanData.review_notes}</p>` : ''}
+            `;
+            
+            $('.loan-details').html(loanDetails);
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('loanDetailsModal'));
+            modal.show();
+        },
+        error: function(error) {
+            console.error('Error fetching loan details:', error);
+            alert('Error loading loan details. Please try again.');
+        }
+    });
+}
+
+// Add this to your admin_panel.html JavaScript section
+$(document).ready(function() {
+    // Check if we have deposit data in localStorage
+    const depositDataString = localStorage.getItem('chequeDepositData');
+    if (depositDataString) {
+        const depositData = JSON.parse(depositDataString);
+        
+        // Display the deposit data in your admin panel
+        // This will depend on your admin panel's structure
+        displayChequeDepositForVerification(depositData);
+        
+        // Clear the data from localStorage after displaying it
+        localStorage.removeItem('chequeDepositData');
+    }
+    
+    // Check URL parameters for deposit_id
+    const urlParams = new URLSearchParams(window.location.search);
+    const depositId = urlParams.get('deposit_id');
+    if (depositId) {
+        // If deposit_id is in URL but we don't have localStorage data,
+        // you might want to fetch the data from the server
+        if (!depositDataString) {
+            fetchChequeDepositData(depositId);
+        }
+    }
+});
+
+
+
+// Function to fetch cheque image
+function fetchChequeImage(depositId) {
+    if (!depositId || depositId === 'unknown') {
+        $('#chequeImageContainer').html(`
+            <div class="alert alert-warning">
+                No image available for this cheque deposit.
+            </div>
+        `);
+        return;
+    }
+    
+    $.ajax({
+        url: `/api/cheque-deposits/${depositId}/image/`,
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        success: function(response) {
+            if (response.image_url) {
+                $('#chequeImageContainer').html(`
+                    <img src="${response.image_url}" alt="Cheque Image" class="img-fluid border rounded" style="max-height: 300px;">
+                `);
+            } else {
+                // Fallback to a direct image path if the API doesn't return a URL
+                $('#chequeImageContainer').html(`
+                    <img src="/media/cheque_images/${depositId}.jpg" alt="Cheque Image" class="img-fluid border rounded" style="max-height: 300px;" 
+                         onerror="this.onerror=null; this.src='/static/images/no_cheque_image.png'; this.alt='No cheque image available';">
+                `);
+            }
+        },
+        error: function(xhr) {
+            console.error('Error fetching cheque image:', xhr.responseText);
+            $('#chequeImageContainer').html(`
+                <div class="alert alert-warning">
+                    <p>Could not load cheque image. Please verify the physical cheque.</p>
+                </div>
+            `);
+        }
+    });
+}
+
+// Function to display cheque deposit data in the admin panel
+function displayChequeDepositForVerification(data) {
+    console.log('Displaying cheque deposit for verification:', data);
+    
+    // Check if verification section exists
+    if ($('#verification-section').length === 0) {
+        console.error('Verification section not found in the DOM');
+        return;
+    }
+    
+    // Create a more robust display with error handling
+    try {
+        // First, display the basic information we have
+        $('#verification-section').html(`
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Pending Verification: Cheque Deposit</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Amount:</strong> $${data.amount || '0.00'}</p>
+                            <p><strong>Cheque Number:</strong> ${data.chequeNumber || 'N/A'}</p>
+                            <p><strong>Issuing Bank:</strong> ${data.issuingBank || 'N/A'}</p>
+                            <p><strong>Date of Issue:</strong> ${data.dateOfIssue || 'N/A'}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Account ID:</strong> ${data.accountId || 'N/A'}</p>
+                            <p><strong>Account Type:</strong> ${data.accountType || 'N/A'}</p>
+                            <p><strong>Submission Time:</strong> ${data.timestamp ? new Date(data.timestamp).toLocaleString() : 'N/A'}</p>
+                            <p id="account-holder-info"><strong>Account Holder:</strong> <span class="spinner-border spinner-border-sm" role="status"></span> Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Add cheque image display section -->
+                    <div class="mt-4 mb-3">
+                        <h6 class="mb-2">Cheque Image:</h6>
+                        <div id="chequeImageContainer" class="text-center border rounded p-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading cheque image...</span>
+                            </div>
+                            <p class="mt-2">Loading cheque image...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-danger me-2" onclick="rejectChequeDeposit('${data.id || 'unknown'}')">Reject</button>
+                        <button class="btn btn-success" onclick="approveChequeDeposit('${data.id || 'unknown'}')">Approve</button>
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        // Fetch account holder information
+        const accountId = data.accountId || 'N/A';
+        if (accountId !== 'N/A') {
+            $.ajax({
+                url: '/get_account_holder/',
+                method: 'POST',
+                data: JSON.stringify({
+                    account_id: accountId
+                }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function(accountData) {
+                    console.log('Account holder data:', accountData);
+                    const accountHolder = accountData.full_name || accountData.username || 'N/A';
+                    const accountNumber = accountData.account_number || 'N/A';
+                    
+                    // Update the account holder information
+                    $('#account-holder-info').html(`
+                        <strong>Account Holder:</strong> ${accountHolder}<br>
+                        <strong>Account Number:</strong> ${accountNumber}
+                    `);
+                },
+                error: function(xhr) {
+                    console.error('Error fetching account holder:', xhr.responseText);
+                    $('#account-holder-info').html(`<strong>Account Holder:</strong> Unable to fetch account information`);
+                }
+            });
+        }
+        
+        // Fetch and display the cheque image
+        fetchChequeImage(data.id);
+        
+        // Scroll to the cheque deposits section
+        $('html, body').animate({
+            scrollTop: $('#chequeDepositsSection').offset().top - 70
+        }, 500);
+        
+        // Highlight the section briefly
+        $('#chequeDepositsSection').addClass('highlight-section');
+        setTimeout(function() {
+            $('#chequeDepositsSection').removeClass('highlight-section');
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error displaying cheque deposit data:', error);
+        $('#verification-section').html(`
+            <div class="alert alert-danger">
+                Error displaying cheque deposit data. Please refresh the page and try again.
+            </div>
+        `);
+    }
+}
+// Function to fetch and display the cheque image
+function fetchChequeImage(depositId) {
+    if (!depositId || depositId === 'unknown' || depositId === 'NEW') {
+        // For new deposits, try to get the image from sessionStorage
+        try {
+            const depositDataString = sessionStorage.getItem('chequeDepositData');
+            if (depositDataString) {
+                const depositData = JSON.parse(depositDataString);
+                
+                // Check if we have image data in base64 format
+                if (depositData.imageData && depositData.imageData.startsWith('data:image')) {
+                    $('#chequeImageContainer').html(`
+                        <img src="${depositData.imageData}" alt="Cheque Image" class="img-fluid border rounded" style="max-height: 300px;">
+                    `);
+                    return;
+                }
+                
+                // Check if we have an image URL
+                if (depositData.imageUrl) {
+                    $('#chequeImageContainer').html(`
+                        <img src="${depositData.imageUrl}" alt="Cheque Image" class="img-fluid border rounded" style="max-height: 300px;">
+                    `);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error('Error processing image data from sessionStorage:', error);
+        }
+        
+        // If we couldn't get the image from sessionStorage, show a placeholder
+        $('#chequeImageContainer').html(`
+            <div class="alert alert-info">
+                <p>Cheque image will be displayed here once available.</p>
+                <p>Please verify the physical cheque or ask the customer for the image.</p>
+            </div>
+        `);
+        return;
+    }
+    
+    // Create a base64 encoded placeholder image
+    const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YwZjBmMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM5OTkiPk5vIGNoZXF1ZSBpbWFnZSBhdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+    
+    // Try to get the image from the server
+    $.ajax({
+        url: `/api/cheque-deposits/${depositId}/image/`,
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        success: function(response) {
+            if (response && response.image_url) {
+                $('#chequeImageContainer').html(`
+                    <img src="${response.image_url}" alt="Cheque Image" class="img-fluid border rounded" style="max-height: 300px;"
+                         onerror="this.onerror=null; this.src='${placeholderImage}';">
+                `);
+            } else {
+                // If no image URL in response, use a direct path
+                $('#chequeImageContainer').html(`
+                    <img src="/media/cheque_images/${depositId}.jpg" alt="Cheque Image" class="img-fluid border rounded" style="max-height: 300px;"
+                         onerror="this.onerror=null; this.src='/media/cheque_images/${depositId}.png'; 
+                         this.onerror=function(){this.onerror=null; this.src='${placeholderImage}';}">
+                `);
+            }
+        },
+        error: function(xhr) {
+            console.error('Error fetching cheque image:', xhr.responseText);
+            
+            // Use the placeholder image directly
+            $('#chequeImageContainer').html(`
+                <div class="text-center">
+                    <img src="${placeholderImage}" alt="No cheque image available" class="img-fluid border rounded" style="max-height: 300px;">
+                    <div class="mt-2 text-muted">
+                        <small>The cheque image could not be loaded. Please verify the physical cheque.</small>
+                    </div>
+                </div>
+            `);
+        }
+    });
+}
+
+        $('.view-cheque-btn').on('click', function() {
+            const chequeId = $(this).data('id');
+            loadChequeDetails(chequeId);
+        });
+        
+        // Load cheque details
+        function loadChequeDetails(chequeId) {
+            $.ajax({
+                url: `/get_cheque_deposit_details/${chequeId}/`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        const deposit = response.deposit;
+                        
+                        // Populate modal with cheque details
+                        $('#chequeUserName').text(deposit.user_name);
+                        $('#chequeAmount').text(deposit.amount);
+                        $('#chequeNumber').text(deposit.cheque_number);
+                        $('#chequeBank').text(deposit.issuing_bank);
+                        $('#chequeIssueDate').text(deposit.date_of_issue);
+                        $('#chequeDepositDate').text(deposit.deposit_date);
+                        $('#chequeStatus').text(deposit.status);
+                        $('#chequeUserId').text(deposit.user_id);
+                        $('#chequeUserEmail').text(deposit.user_email);
+                        
+                        // Set data attributes for approve/reject buttons
+                        $('#approveChequeBtn').data('id', deposit.id);
+                        $('#approveChequeBtn').data('user-id', deposit.user_id);
+                        $('#approveChequeBtn').data('amount', deposit.amount);
+                        $('#approveChequeBtn').data('cheque-number', deposit.cheque_number);
+                        $('#approveChequeBtn').data('issuing-bank', deposit.issuing_bank);
+                        
+                        $('#rejectChequeBtn').data('id', deposit.id);
+                        
+                        // Display images if available
+                        if (deposit.front_image) {
+                            $('#chequeFrontImage img').attr('src', deposit.front_image);
+                            $('#chequeFrontImage').show();
+                        } else {
+                            $('#chequeFrontImage').hide();
+                        }
+                        
+                        if (deposit.back_image) {
+                            $('#chequeBackImage img').attr('src', deposit.back_image);
+                            $('#chequeBackImage').show();
+                        } else {
+                            $('#chequeBackImage').hide();
+                        }
+                    } else {
+                        showToast('error', 'Error', response.message);
+                    }
+                },
+                error: function(xhr) {
+                    showToast('error', 'Error', 'Failed to load cheque details');
+                }
+            });
+        }
+        
+        // Handle approve cheque button click
+        $('#approveChequeBtn').on('click', function() {
+            const depositId = $(this).data('id');
+            const userId = $(this).data('user-id');
+            const amount = $(this).data('amount');
+            const chequeNumber = $(this).data('cheque-number');
+            const issuingBank = $(this).data('issuing-bank');
+            
+            // Confirm approval
+            if (confirm('Are you sure you want to approve this cheque deposit?')) {
+                approveChequeDeposit(depositId, userId, amount, chequeNumber, issuingBank);
+            }
+        });
+        
+        // Function to approve cheque deposit
+        function approveChequeDeposit(depositId, accountId, amount, chequeNumber, issuingBank) {
+            $.ajax({
+                url: '/approve_cheque_deposit/',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    deposit_id: depositId,
+                    account_id: accountId,
+                    amount: amount,
+                    cheque_number: chequeNumber,
+                    issuing_bank: issuingBank
+                }),
+                success: function(response) {
+                    if (response.status === 'success') {
+                        showToast('success', 'Success', response.message);
+                        $('#chequeDetailsModal').modal('hide');
+                        // Reload the page to refresh the list
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast('error', 'Error', response.message);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Failed to approve cheque deposit';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    showToast('error', 'Error', errorMsg);
+                }
+            });
+        }
+        
+        // Helper function to show toast notifications
+        function showToast(type, title, message) {
+            // You can implement this based on your UI framework
+            // For example, using Bootstrap toasts:
+            const toastHtml = `
+                <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}:</strong> ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) {
+                const container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(container);
+            }
+            
+            $('#toastContainer').append(toastHtml);
+            const toastElement = $('.toast').last();
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+    
+        $(document).ready(function() {
+        // Handle view cheque button click
+        $(document).on('click', '.view-cheque-btn', function() {
+            const chequeId = $(this).data('id');
+            loadChequeDetails(chequeId);
+        });
+        
+        // Load cheque details
+        function loadChequeDetails(chequeId) {
+            $.ajax({
+                url: `/get_cheque_deposit_details/${chequeId}/`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        const deposit = response.deposit;
+                        
+                        // Populate modal with cheque details
+                        $('#chequeUserName').text(deposit.user_name);
+                        $('#chequeAmount').text(deposit.amount);
+                        $('#chequeNumber').text(deposit.cheque_number);
+                        $('#chequeBank').text(deposit.issuing_bank);
+                        $('#chequeIssueDate').text(deposit.date_of_issue);
+                        $('#chequeDepositDate').text(deposit.deposit_date);
+                        $('#chequeStatus').text(deposit.status);
+                        $('#chequeUserId').text(deposit.user_id);
+                        $('#chequeUserEmail').text(deposit.user_email);
+                        
+                        // Set data attributes for approve/reject buttons
+                        $('#approveChequeBtn').data('id', deposit.id);
+                        $('#approveChequeBtn').data('user-id', deposit.user_id);
+                        $('#approveChequeBtn').data('amount', deposit.amount);
+                        
+                        $('#rejectChequeBtn').data('id', deposit.id);
+                        
+                        // Display images if available
+                        if (deposit.front_image) {
+                            $('#chequeFrontImage img').attr('src', deposit.front_image);
+                            $('#chequeFrontImage').show();
+                        } else {
+                            $('#chequeFrontImage').hide();
+                        }
+                        
+                        if (deposit.back_image) {
+                            $('#chequeBackImage img').attr('src', deposit.back_image);
+                            $('#chequeBackImage').show();
+                        } else {
+                            $('#chequeBackImage').hide();
+                        }
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error loading cheque details');
+                }
+            });
+        }
+        
+        // Handle approve cheque button click
+        $('#approveChequeBtn').on('click', function() {
+            const depositId = $(this).data('id');
+            const userId = $(this).data('user-id');
+            const amount = $(this).data('amount');
+            
+            // Confirm approval
+            if (confirm('Are you sure you want to approve this cheque deposit?')) {
+                approveChequeDeposit(depositId, userId, amount);
+            }
+        });
+        
+        // Function to approve cheque deposit
+        function approveChequeDeposit(depositId, accountId, amount) {
+            $.ajax({
+                url: '/approve_cheque_deposit/',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    deposit_id: depositId,
+                    account_id: accountId,
+                    amount: amount
+                }),
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Success: ' + response.message);
+                        $('#chequeDetailsModal').modal('hide');
+                        // Reload the page to refresh the list
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Failed to approve cheque deposit';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+        
+        // Handle reject cheque button click
+        $('#rejectChequeBtn').on('click', function() {
+            const depositId = $(this).data('id');
+            
+            // Confirm rejection
+            if (confirm('Are you sure you want to reject this cheque deposit?')) {
+                rejectChequeDeposit(depositId);
+            }
+        });
+        
+        // Function to reject cheque deposit
+        function rejectChequeDeposit(depositId) {
+            $.ajax({
+                url: '/reject_cheque_deposit/',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    deposit_id: depositId
+                }),
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Success: ' + response.message);
+                        $('#chequeDetailsModal').modal('hide');
+                        // Reload the page to refresh the list
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Failed to reject cheque deposit';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        }
+    });
+    function loadPendingChequeDeposits() {
+    $.ajax({
+        url: '/get_pending_cheque_deposits/',
+        method: 'GET',
+        success: function(response) {
+            const pendingDepositsContainer = $('#pending-deposits-container');
+            pendingDepositsContainer.empty();
+
+            if (response.deposits && response.deposits.length > 0) {
+                response.deposits.forEach(function(deposit) {
+                    const depositItem = `
+                        <div class="card mb-3 pending-deposit-item" data-deposit-id="${deposit.id}">
+                            <div class="card-header bg-warning">
+                                <h5 class="mb-0">Pending Cheque Deposit #${deposit.id}</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Amount:</strong> $${deposit.amount}</p>
+                                        <p><strong>Cheque Number:</strong> ${deposit.cheque_number}</p>
+                                        <p><strong>Issuing Bank:</strong> ${deposit.issuing_bank}</p>
+                                        <p><strong>Date of Issue:</strong> ${deposit.date_of_issue}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Account ID:</strong> ${deposit.user_id}</p>
+                                        <p><strong>Account Holder:</strong> ${deposit.user_name}</p>
+                                        <p><strong>Account Email:</strong> ${deposit.user_email}</p>
+                                        <p><strong>Submission Time:</strong> ${deposit.deposit_date}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-success" onclick="viewChequeDetails(${deposit.id})">View Details</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    pendingDepositsContainer.append(depositItem);
+                });
+            } else {
+                pendingDepositsContainer.html('<div class="alert alert-info">No pending cheque deposits</div>');
+            }
+        },
+        error: function(xhr) {
+            console.error('Error loading pending cheque deposits:', xhr.responseText);
+            $('#pending-deposits-container').html('<div class="alert alert-danger">Error loading pending deposits</div>');
+        }
+    });
+}
+
+function exportLoanData() {
+    // Show loading state
+    const exportButton = document.querySelector('[onclick="exportLoanData()"]');
+    const originalText = exportButton.innerHTML;
+    exportButton.innerHTML = 'Exporting...';
+    exportButton.disabled = true;
+    
+    // Create a hidden form and submit it to trigger the download
+    const form = document.createElement('form');
+    form.method = 'GET';
+    form.action = '/export_loan_data/';
+    
+    // Add CSRF token if needed
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken.value;
+        form.appendChild(csrfInput);
+    }
+    
+    // Submit the form
+    document.body.appendChild(form);
+    form.submit();
+    
+    // Reset button state after a short delay
+    setTimeout(() => {
+        exportButton.innerHTML = originalText;
+        exportButton.disabled = false;
+    }, 2000);
+}
+// ... existing code ...
+
+
+
+</script>    
+<!-- Add the Loan Details Modal -->
+<!-- Update the Loan Details Modal -->
+<!-- Update the Loan Details Modal -->
+<div class="modal fade" id="loanDetailsModal" 
+     tabindex="-1" 
+     aria-labelledby="loanDetailsModalLabel" 
+     role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loanDetailsModalLabel">Loan Application Details</h5>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        aria-label="Close"
+                        tabindex="0"></button>
+            </div>
+            <div class="modal-body">
+                <div class="loan-details">
+                    <!-- Loan details will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal"
+                        tabindex="0">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    $(document).ready(function() {
+        // Find the View Details buttons in specific cards and attach click handlers
+        $('.dashboard-card').each(function() {
+            const cardTitle = $(this).find('h6').text();
+            
+            // Add click handler for Total Clients card
+            if (cardTitle.includes('Total Clients')) {
+                $(this).find('.card-purple-btn').on('click', function() {
+                    loadClientDetails('all');
+                });
+            }
+            
+            // Add click handler for Active Accounts card
+            if (cardTitle.includes('Active Accounts')) {
+                $(this).find('.card-purple-btn').on('click', function() {
+                    loadClientDetails('active');
+                });
+            }
+        });
+    });
+    
+    function loadClientDetails(filter) {
+        // Show loading indicator
+        const tbody = $('#clientDetailsTableBody');
+        tbody.html('<tr><td colspan="8" class="text-center">Loading client data...</td></tr>');
+        
+        // Update modal title based on filter
+        if (filter === 'active') {
+            $('#clientDetailsModalLabel').text('Active Accounts');
+        } else {
+            $('#clientDetailsModalLabel').text('All Client Details');
+        }
+        
+        // Show the modal
+        $('#clientDetailsModal').modal('show');
+        
+        // Fetch client data
+        $.ajax({
+            url: '/get_client_details/',
+            method: 'GET',
+            data: { filter: filter }, // Pass filter parameter to backend
+            success: function(data) {
+                if (data.error) {
+                    tbody.html(`<tr><td colspan="8" class="text-center text-danger">${data.error}</td></tr>`);
+                    return;
+                }
+                
+                // Clear the table body
+                tbody.empty();
+                
+                // Check if we have client data
+                if (data.clients && data.clients.length > 0) {
+                    // Populate the table with client data
+                    data.clients.forEach(function(client) {
+                        // Skip inactive accounts if filter is 'active'
+                        if (filter === 'active' && !client.is_active) {
+                            return;
+                        }
+                        
+                        const row = `
+                            <tr>
+                                <td>${client.username}</td>
+                                <td>${client.name}</td>
+                                <td>${client.email}</td>
+                                <td>${client.account_number}</td>
+                                <td>$${client.account_balance.toFixed(2)}</td>
+                                <td>
+                                    <span class="badge ${client.is_active ? 'bg-success' : 'bg-danger'}">
+                                        ${client.is_active ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
+                                <td>${client.date_joined}</td>
+                                <td>${client.last_login}</td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                    
+                    // If no rows were added after filtering
+                    if (tbody.children().length === 0) {
+                        tbody.html('<tr><td colspan="8" class="text-center">No matching clients found</td></tr>');
+                    }
+                } else {
+                    // No clients found
+                    tbody.html('<tr><td colspan="8" class="text-center">No clients found</td></tr>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching client data:', error);
+                tbody.html(`<tr><td colspan="8" class="text-center text-danger">Error loading client data: ${error}</td></tr>`);
+            }
+        });
+    }
+    </script>
+    <!-- Make sure this modal is defined only once in your file -->
+<div class="modal fade" id="clientDetailsModal" tabindex="-1" aria-labelledby="clientDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clientDetailsModalLabel">Client Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="clientDetailsTable">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Account Number</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Joined Date</th>
+                                <th>Last Login</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientDetailsTableBody">
+                            <!-- Client data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+</html>
