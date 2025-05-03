@@ -28,26 +28,34 @@ RJM Bank is a comprehensive digital banking solution built with Django. It offer
 #### 1️⃣ HOMEPAGE
 ![Screenshot 1](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93148_localhost.jpeg)
 
-#### 2️⃣ Screenshot_8-4-2025_93218_localhost.jpeg
-![Screenshot 2](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93218_localhost.jpeg)
-
-#### 3️⃣ Screenshot_8-4-2025_93249_localhost.jpeg
+#### 2️⃣ DASHBOARD
 ![Screenshot 3](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93249_localhost.jpeg)
 
-#### 4️⃣ Screenshot_8-4-2025_93314_localhost.jpeg
+#### 3️⃣ CIBIL SCORE
 ![Screenshot 4](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93314_localhost.jpeg)
 
-#### 5️⃣ Screenshot_8-4-2025_93530_localhost.jpeg
+#### 4️⃣CHEQUE DEPOSIT
 ![Screenshot 5](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93530_localhost.jpeg)
 
-#### 6️⃣ Screenshot_8-4-2025_93555_localhost.jpeg
+#### 5️⃣ INVESTMENT
 ![Screenshot 6](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93555_localhost.jpeg)
 
 
+## Installation Process
 
-## Installation
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package installer)
+- Git
 
-1. Clone the repository
+### Step-by-Step Installation
+
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/rjm-bank.git
-   cd rjm-bank
+   git clone https://github.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System.git
+   cd Predicting-Cibil-Score-and-Bank-Management-System
+
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
