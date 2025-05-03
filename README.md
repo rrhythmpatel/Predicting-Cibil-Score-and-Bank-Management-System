@@ -24,7 +24,7 @@ RJM Bank is a comprehensive digital banking solution built with Django. It offer
 ## Screenshots
 
 ### Homepage
-![Homepage](static/images/screenshots/homepage.png)
+![Homepage]Screenshot_8-4-2025_93148_localhost.jpeg
 
 ### Dashboard
 ![Dashboard](static/images/screenshots/dashboard.png)
