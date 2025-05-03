@@ -23,15 +23,28 @@ RJM Bank is a comprehensive digital banking solution built with Django. It offer
 
 ## Screenshots
 
-### Homepage
-![Screenshot](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93148_localhost.jpeg)
+### 📸 Project Screenshots
 
+#### 1️⃣ Screenshot_8-4-2025_93148_localhost.jpeg
+![Screenshot 1](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93148_localhost.jpeg)
 
-### Dashboard
-![Dashboard](static/images/screenshots/dashboard.png)
+#### 2️⃣ Screenshot_8-4-2025_93218_localhost.jpeg
+![Screenshot 2](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93218_localhost.jpeg)
 
-### Investment Portfolio
-![Investments](static/images/screenshots/investments.png)
+#### 3️⃣ Screenshot_8-4-2025_93249_localhost.jpeg
+![Screenshot 3](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93249_localhost.jpeg)
+
+#### 4️⃣ Screenshot_8-4-2025_93314_localhost.jpeg
+![Screenshot 4](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93314_localhost.jpeg)
+
+#### 5️⃣ Screenshot_8-4-2025_93530_localhost.jpeg
+![Screenshot 5](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93530_localhost.jpeg)
+
+#### 6️⃣ Screenshot_8-4-2025_93555_localhost.jpeg
+![Screenshot 6](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93555_localhost.jpeg)
+
+#### 7️⃣ Screenshot_8-4-2025_93724_localhost.jpeg
+![Screenshot 7](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93724_localhost.jpeg)
 
 ## Installation
 
