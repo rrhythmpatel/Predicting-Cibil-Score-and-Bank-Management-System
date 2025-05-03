@@ -25,7 +25,7 @@ RJM Bank is a comprehensive digital banking solution built with Django. It offer
 
 ### 📸 Project Screenshots
 
-#### 1️⃣ Screenshot_8-4-2025_93148_localhost.jpeg
+#### 1️⃣ HOMEPAGE
 ![Screenshot 1](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93148_localhost.jpeg)
 
 #### 2️⃣ Screenshot_8-4-2025_93218_localhost.jpeg
@@ -43,8 +43,7 @@ RJM Bank is a comprehensive digital banking solution built with Django. It offer
 #### 6️⃣ Screenshot_8-4-2025_93555_localhost.jpeg
 ![Screenshot 6](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93555_localhost.jpeg)
 
-#### 7️⃣ Screenshot_8-4-2025_93724_localhost.jpeg
-![Screenshot 7](https://raw.githubusercontent.com/rrhythmpatel/Predicting-Cibil-Score-and-Bank-Management-System/master/Screenshot_8-4-2025_93724_localhost.jpeg)
+
 
 ## Installation
 
